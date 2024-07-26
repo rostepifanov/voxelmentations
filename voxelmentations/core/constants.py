@@ -1,0 +1,21 @@
+import cv2
+
+import voxelmentations.core.enum as E
+
+HORIZONTAL_DIM = 0
+VERTICAL_DIM = 1
+AXIAL_DIM = 2
+
+NUM_SPATIAL_DIMENSIONS = 3
+NUM_MONO_CHANNEL_DIMENSIONS = 3
+NUM_MULTI_CHANNEL_DIMENSIONS = 4
+
+MAP_BORDER_TYPE_TO_CV2 = {
+    E.BorderType.CONSTANT: cv2.BORDER_CONSTANT,
+    E.BorderType.REPLICATE: cv2.BORDER_REPLICATE,
+}
+
+MAP_BORDER_TYPE_TO_NUMPY = {
+    E.BorderType.CONSTANT: 'constant',
+    E.BorderType.REPLICATE: 'edge',
+}

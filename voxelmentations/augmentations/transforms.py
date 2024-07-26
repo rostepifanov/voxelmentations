@@ -1,0 +1,303 @@
+import cv2
+import numpy as np
+
+import voxelmentations.core.enum as E
+import voxelmentations.core.constants as C
+import voxelmentations.augmentations.misc as M
+import voxelmentations.augmentations.functional as F
+
+from voxelmentations.core.transforms import VoxelOnlyTransform, DualTransform
+
+class PadIfNeeded(DualTransform):
+    """Pad shape of the voxel to the minimal shape.
+    """
+    def __init__(
+            self,
+            min_height=32,
+            min_width=32,
+            min_depth=32,
+            position=E.PositionType.CENTER,
+            border_mode=E.BorderType.CONSTANT,
+            fill_value=0.,
+            fill_mask_value=0,
+            always_apply=False,
+            p=1.0,
+        ):
+        """
+            :args:
+                min_height: int
+                    minimal height to fill with padding
+                min_width: int
+                    minimal width to fill with padding
+                min_depth: int
+                    minimal depth to fill with padding
+                position: PositionType or str
+                    position of voxel
+                border_mode: BorderType
+                    border mode
+                fill_value: int or float or None
+                    padding value if border_mode is BorderType.CONSTANT
+                fill_mask_value: int or None
+                    padding value for mask if border_mode is cv2.BORDER_CONSTANT
+        """
+        super(PadIfNeeded, self).__init__(always_apply, p)
+
+        self.min_height = M.prepare_non_negative_int(min_height, 'min_height')
+        self.min_width = M.prepare_non_negative_int(min_width, 'min_width')
+        self.min_depth = M.prepare_non_negative_int(min_depth, 'min_depth')
+
+        self.position = E.PositionType(position)
+
+        self.border_mode = border_mode
+        self.fill_value = M.prepare_float(fill_value, 'fill_value')
+        self.fill_mask_value = M.prepare_int(fill_mask_value, 'fill_mask_value')
+
+    def apply(self, voxel, pads, **params):
+        return F.pad(voxel, pads, self.border_mode, self.fill_value)
+
+    def apply(self, mask, pads, **params):
+        return F.pad(mask, pads, self.border_mode, self.fill_mask_value)
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        height, width, depth = params['voxel'].shape[:C.NUM_SPATIAL_DIMENSIONS]
+
+        pad_height = max(0, self.min_height - height)
+        pad_width = max(0, self.min_width - width)
+        pad_depth = max(0, self.min_depth - depth)
+
+        if self.position == E.PositionType.LEFT:
+            left_pad = 0
+            right_pad = pad_height
+
+            top_pad = 0
+            bottom_pad = pad_width
+
+            front_pad = 0
+            back_pad = pad_depth
+        elif self.position == E.PositionType.CENTER:
+            left_pad = pad_height // 2
+            right_pad = pad_height - left_pad
+
+            top_pad = pad_width // 2
+            bottom_pad = pad_width - top_pad
+
+            front_pad = pad_depth // 2
+            back_pad = pad_depth - front_pad
+        elif self.position == E.PositionType.RIGHT:
+            left_pad = pad_height
+            right_pad = 0
+
+            top_pad = pad_width
+            bottom_pad = 0
+
+            front_pad = pad_depth
+            back_pad = 0
+        else:
+            left_pad = np.random.randint(0, pad_height + 1)
+            rigth_pad = pad_height - left_pad
+
+            top_pad = np.random.randint(0, pad_width + 1)
+            bottom_pad = pad_height - top_pad
+
+            front_pad = np.random.randint(0, pad_depth + 1)
+            back_pad = pad_height - front_pad
+
+        pads = (
+            (left_pad, rigth_pad),
+            (top_pad, bottom_pad),
+            (front_pad, back_pad)
+        )
+
+        return {'pads': pads}
+
+    def get_transform_init_args_names(self):
+        return ('min_height', 'min_width', 'min_depth', 'position', 'border_mode', 'fill_value', 'fill_mask_value')
+
+class Flip(DualTransform):
+    """Flip the input voxel along a dim.
+    """
+    _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
+
+    def apply(self, voxel, dims, **params):
+        return F.flip(voxel, dims)
+
+    def get_params(self):
+        code = np.random.randint(1, 2**len(self._DIMS))
+
+        dims = tuple()
+
+        for dim in self._DIMS:
+            if code % 2 == 1:
+                dims = (*dims, dim)
+
+            code = code / 2
+
+        return {'dims': dims}
+
+    def get_transform_init_args_names(self):
+        return tuple()
+
+class AxialFlip(Flip):
+    """Flip the input voxel in z dim.
+    """
+    _DIMS = (C.AXIAL_DIM, )
+
+class AxialPlaneFlip(Flip):
+    """Flip the input voxel in x-y plane.
+    """
+    _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM)
+
+class AxialPlaneDropout(DualTransform):
+    """Randomly drop out axial planes of input voxel.
+    """
+    def __init__(
+            self,
+            dropout_rate=0.05,
+            fill_value=0.,
+            mask_fill_value=None,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                dropout_rate: float
+                    percent of dropped planes
+                fill_value: float
+                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
+                mask_fill_value: int or None
+                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
+        """
+        super(AxialPlaneDropout, self).__init__(always_apply, p)
+
+        self.dropout_rate = M.prepare_inrange_zero_one_float(dropout_rate, 'dropout_rate')
+
+        self.fill_value = M.prepare_float(fill_value, 'fill_value')
+        self.mask_fill_value = mask_fill_value
+
+    def apply(self, voxel, indices, **params):
+        return F.plane_dropout(voxel, indices, self.fill_value, C.AXIAL_DIM)
+
+    def apply_to_mask(self, mask, indices, **params):
+        if self.mask_fill_value is None:
+            return mask
+        else:
+            return F.plane_dropout(mask, indices, self.fill_value, C.AXIAL_DIM)
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        depth = params['voxel'].shape[C.AXIAL_DIM]
+        size = int(depth*self.dropout_rate)
+
+        indices = np.random.choice(depth, size=size, replace=False)
+
+        return {'indices': indices}
+
+    def get_transform_init_args_names(self):
+        return ('dropout_rate', 'fill_value', 'mask_fill_value')
+
+class AxialPlaneRotate(DualTransform):
+    """Randomly rotate axial planes of input voxel.
+    """
+    def __init__(
+            self,
+            angle_limit=10,
+            border_mode=E.BorderType.CONSTANT,
+            interpolation=cv2.INTER_LINEAR,
+            fill_value=0,
+            mask_fill_value=0,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                angle_limit: float
+                    limit of rotation in degrees [0, 180]
+                border_mode: BorderType
+                    border mode
+                interpolation: OpenCV flag
+                    OpenCV interpolation mode
+                fill_value: float
+                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
+                mask_fill_value: int or None
+                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
+        """
+        super(AxialPlaneRotate, self).__init__(always_apply, p)
+
+        self.angle_limit = M.prepare_inrange_zero_one_float(angle_limit / 180, 'angle_limit')
+
+        self.border_mode = border_mode
+        self.interpolation = interpolation
+
+        self.fill_value = M.prepare_float(fill_value, 'fill_value')
+        self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
+
+    def apply(self, voxel, angle, interpolation, **params):
+        return F.plane_rotate(voxel, angle, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+
+    def apply_to_mask(self, mask, angle, interpolation, **params):
+        return F.plane_rotate(mask, angle, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+
+    def get_params(self):
+        angle = 180 * (2 * np.random.random() - 1) * self.angle_limit
+
+        return {'angle': angle, 'interpolation': self.interpolation}
+
+    def get_transform_init_args_names(self):
+        return ('angle_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
+
+class AxialPlaneScale(DualTransform):
+    """Randomly scale axial planes of input voxel.
+    """
+    def __init__(
+            self,
+            scale_limit=0.05,
+            border_mode=E.BorderType.CONSTANT,
+            interpolation=cv2.INTER_LINEAR,
+            fill_value=0,
+            mask_fill_value=0,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                scale_limit: float
+                    limit of scaling
+                border_mode: BorderType
+                    border mode
+                interpolation: OpenCV flag
+                    OpenCV interpolation mode
+                fill_value: float
+                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
+                mask_fill_value: int or None
+                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
+        """
+        super(AxialPlaneScale, self).__init__(always_apply, p)
+
+        self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
+
+        self.border_mode = border_mode
+        self.interpolation = interpolation
+
+        self.fill_value = M.prepare_float(fill_value, 'fill_value')
+        self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
+
+    def apply(self, voxel, scale, interpolation, **params):
+        return F.plane_scale(voxel, scale, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+
+    def apply_to_mask(self, mask, scale, interpolation, **params):
+        return F.plane_scale(mask, scale, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+
+    def get_params(self):
+        scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
+
+        return {'scale': scale, 'interpolation': self.interpolation}
+
+    def get_transform_init_args_names(self):
+        return ('scale_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
