@@ -6,6 +6,8 @@ import voxelmentations.core.constants as C
 import voxelmentations.core.functional as F
 
 def apply_along_dim(data, func, dim):
+    """Apply the same transformation along the dim
+    """
     data = np.moveaxis(data, dim, 0)
 
     data = np.stack([*map(
@@ -44,16 +46,18 @@ def plane_dropout(voxel, indices, value, dim):
 
 @F.preserve_channel_dim
 def plane_rotate(voxel, angle, interpolation, border_mode, fill_value, dim):
+    """Perform clockwise rotation of planes along the dim
+    """
     shape = (*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS])
 
-    point = [ 0.5 * ishape for ishape in shape ][::-1]
-    T = cv2.getRotationMatrix2D(point, angle, 1.)
+    point = [ 0.5 * ishape - 0.5 for ishape in shape ][::-1]
+    T = cv2.getRotationMatrix2D(point, -angle, 1.)
 
     func = lambda arr: cv2.warpAffine(
         arr,
         T,
         shape,
-        flags=interpolation,
+        flags=C.MAP_INTER_TO_CV2[interpolation],
         borderMode=C.MAP_BORDER_TYPE_TO_CV2[border_mode],
         borderValue=fill_value,
     )
@@ -66,13 +70,34 @@ def plane_rotate(voxel, angle, interpolation, border_mode, fill_value, dim):
 def plane_scale(voxel, scale, interpolation, border_mode, fill_value, dim):
     shape = (*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS])
 
-    T = np.eye(2, 3, dtype=np.float32) * scale
+    point = [ 0.5 * ishape - 0.5 for ishape in shape ][::-1]
+    T = cv2.getRotationMatrix2D(point, 0., scale)
 
     func = lambda arr: cv2.warpAffine(
         arr,
         T,
         shape,
-        flags=interpolation,
+        flags=C.MAP_INTER_TO_CV2[interpolation],
+        borderMode=C.MAP_BORDER_TYPE_TO_CV2[border_mode],
+        borderValue=fill_value,
+    )
+
+    voxel = apply_along_dim(voxel, func, dim)
+
+    return voxel
+
+@F.preserve_channel_dim
+def plane_affine(voxel, angle, scale, interpolation, border_mode, fill_value, dim):
+    shape = (*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS])
+
+    point = [ 0.5 * ishape - 0.5 for ishape in shape ][::-1]
+    T = cv2.getRotationMatrix2D(point, -angle, scale)
+
+    func = lambda arr: cv2.warpAffine(
+        arr,
+        T,
+        shape,
+        flags=C.MAP_INTER_TO_CV2[interpolation],
         borderMode=C.MAP_BORDER_TYPE_TO_CV2[border_mode],
         borderValue=fill_value,
     )

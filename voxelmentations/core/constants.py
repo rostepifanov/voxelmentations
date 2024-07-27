@@ -2,8 +2,8 @@ import cv2
 
 import voxelmentations.core.enum as E
 
-HORIZONTAL_DIM = 0
-VERTICAL_DIM = 1
+VERTICAL_DIM = 0
+HORIZONTAL_DIM = 1
 AXIAL_DIM = 2
 
 NUM_SPATIAL_DIMENSIONS = 3
@@ -18,4 +18,9 @@ MAP_BORDER_TYPE_TO_CV2 = {
 MAP_BORDER_TYPE_TO_NUMPY = {
     E.BorderType.CONSTANT: 'constant',
     E.BorderType.REPLICATE: 'edge',
+}
+
+MAP_INTER_TO_CV2 = {
+    E.InterType.NEAREST: cv2.INTER_NEAREST,
+    E.InterType.LINEAR: cv2.INTER_LINEAR,
 }

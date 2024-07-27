@@ -1,5 +1,4 @@
-import cv2
-import numpy as np
+import voxelmentations.core.enum as E
 
 from voxelmentations.core.application import Apply
 from voxelmentations.core.utils import format_args
@@ -156,7 +155,7 @@ class DualTransform(Transform):
         }
 
     def apply_to_mask(self, mask, **params):
-        return self.apply(mask, **{k: cv2.INTER_NEAREST if k == 'interpolation' else v for k, v in params.items()})
+        return self.apply(mask, **{k: E.InterType.NEAREST if k == 'interpolation' else v for k, v in params.items()})
 
 class Identity(DualTransform):
     """Identity transform
