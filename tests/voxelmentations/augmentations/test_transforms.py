@@ -10,6 +10,7 @@ SHAPE_PRESERVED_TRANSFORMS = [
     V.AxialPlaneDropout,
     V.AxialPlaneRotate,
     V.AxialPlaneScale,
+    V.AxialPlaneAffine,
 ]
 
 SHAPE_UNPRESERVED_TRANSFORMS = [

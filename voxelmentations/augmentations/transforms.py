@@ -209,7 +209,7 @@ class AxialPlaneRotate(DualTransform):
             self,
             angle_limit=10,
             border_mode=E.BorderType.CONSTANT,
-            interpolation=cv2.INTER_LINEAR,
+            interpolation=E.InterType.LINEAR,
             fill_value=0,
             mask_fill_value=0,
             always_apply=False,
@@ -221,8 +221,8 @@ class AxialPlaneRotate(DualTransform):
                     limit of rotation in degrees [0, 180]
                 border_mode: BorderType
                     border mode
-                interpolation: OpenCV flag
-                    OpenCV interpolation mode
+                interpolation: InterType
+                    interpolation mode
                 fill_value: float
                     padding value of voxel if border_mode is cv2.BORDER_CONSTANT
                 mask_fill_value: int or None
@@ -259,7 +259,7 @@ class AxialPlaneScale(DualTransform):
             self,
             scale_limit=0.05,
             border_mode=E.BorderType.CONSTANT,
-            interpolation=cv2.INTER_LINEAR,
+            interpolation=E.InterType.LINEAR,
             fill_value=0,
             mask_fill_value=0,
             always_apply=False,
@@ -271,8 +271,8 @@ class AxialPlaneScale(DualTransform):
                     limit of scaling
                 border_mode: BorderType
                     border mode
-                interpolation: OpenCV flag
-                    OpenCV interpolation mode
+                interpolation: InterType
+                    interpolation mode
                 fill_value: float
                     padding value of voxel if border_mode is cv2.BORDER_CONSTANT
                 mask_fill_value: int or None
@@ -301,3 +301,63 @@ class AxialPlaneScale(DualTransform):
 
     def get_transform_init_args_names(self):
         return ('scale_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
+
+class AxialPlaneAffine(DualTransform):
+    """Randomly deform axial planes of input voxel.
+    """
+    def __init__(
+            self,
+            angle_limit=10,
+            shift_limit=0.05,
+            scale_limit=0.05,
+            border_mode=E.BorderType.CONSTANT,
+            interpolation=E.InterType.LINEAR,
+            fill_value=0,
+            mask_fill_value=0,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                angle_limit: float
+                    limit of rotation in degrees [0, 180]
+                shift_limit: float
+                    limit of shifting
+                scale_limit: float
+                    limit of scaling
+                border_mode: BorderType
+                    border mode
+                interpolation: InterType
+                    interpolation mode
+                fill_value: float
+                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
+                mask_fill_value: int or None
+                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
+        """
+        super(AxialPlaneAffine, self).__init__(always_apply, p)
+
+        self.angle_limit = M.prepare_inrange_zero_one_float(angle_limit / 180, 'angle_limit')
+        self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
+        self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
+
+        self.border_mode = border_mode
+        self.interpolation = interpolation
+
+        self.fill_value = M.prepare_float(fill_value, 'fill_value')
+        self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
+
+    def apply(self, voxel, angle, shift, scale, interpolation, **params):
+        return F.plane_affine(voxel, angle, shift, scale, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+
+    def apply_to_mask(self, mask, angle, shift, scale, interpolation, **params):
+        return F.plane_affine(mask, angle, shift, scale, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+
+    def get_params(self):
+        angle = 180 * (2 * np.random.random() - 1) * self.angle_limit
+        shift = (2 * np.random.random() - 1) * self.shift_limit
+        scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
+
+        return {'angle': angle, 'shift': shift, 'scale': scale, 'interpolation': self.interpolation}
+
+    def get_transform_init_args_names(self):
+        return ('angle_limit', 'scale_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')

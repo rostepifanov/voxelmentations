@@ -59,6 +59,7 @@ The list of transforms:
 - [AxialPlaneDropout]()
 - [AxialPlaneRotate]()
 - [AxialPlaneScale]()
+- [AxialPlaneAffine]()
 
 ## Citing
 
