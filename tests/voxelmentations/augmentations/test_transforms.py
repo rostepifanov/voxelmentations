@@ -7,10 +7,15 @@ SHAPE_PRESERVED_TRANSFORMS = [
     V.Flip,
     V.AxialFlip,
     V.AxialPlaneFlip,
+    V.PlaneDropout,
+    V.HorizontalPlaneDropout,
+    V.VerticalPlaneDropout,
     V.AxialPlaneDropout,
     V.AxialPlaneRotate,
     V.AxialPlaneScale,
     V.AxialPlaneAffine,
+    V.GaussNoise,
+    V.GaussBlur,
 ]
 
 SHAPE_UNPRESERVED_TRANSFORMS = [
