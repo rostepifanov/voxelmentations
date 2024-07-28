@@ -1,4 +1,5 @@
 import cv2
+import scipy as sc
 import numpy as np
 
 import voxelmentations.core.enum as E
@@ -87,11 +88,12 @@ def plane_scale(voxel, scale, interpolation, border_mode, fill_value, dim):
     return voxel
 
 @F.preserve_channel_dim
-def plane_affine(voxel, angle, scale, interpolation, border_mode, fill_value, dim):
+def plane_affine(voxel, angle, shift, scale, interpolation, border_mode, fill_value, dim):
     shape = (*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS])
 
     point = [ 0.5 * ishape - 0.5 for ishape in shape ][::-1]
     T = cv2.getRotationMatrix2D(point, -angle, scale)
+    T[:, 2] += np.array(shape) * shift
 
     func = lambda arr: cv2.warpAffine(
         arr,
@@ -105,3 +107,29 @@ def plane_affine(voxel, angle, scale, interpolation, border_mode, fill_value, di
     voxel = apply_along_dim(voxel, func, dim)
 
     return voxel
+
+def gauss_noise(voxel, gauss):
+    if len(voxel.shape) > len(gauss.shape):
+        gauss = np.expand_dims(gauss, axis=-1)
+
+    return voxel + gauss
+
+def conv(voxel, kernel, border_mode, fill_value):
+    if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
+        kernel = np.expand_dims(kernel, axis=-1)
+
+    return sc.ndimage.convolve(
+        voxel,
+        kernel,
+        mode=C.MAP_BORDER_TYPE_TO_SC[border_mode],
+        cval=fill_value,
+    )
+
+def _plane_grid_distortion_cv_engine():
+    ...
+
+def _plane_grid_distortion_sc_engine():
+    ...
+
+def plane_grid_distortion():
+    ...

@@ -17,7 +17,7 @@ class PadIfNeeded(DualTransform):
             min_width=32,
             min_depth=32,
             position=E.PositionType.CENTER,
-            border_mode=E.BorderType.CONSTANT,
+            border_mode=E.BorderType.DEFAULT,
             fill_value=0.,
             fill_mask_value=0,
             always_apply=False,
@@ -151,9 +151,11 @@ class AxialPlaneFlip(Flip):
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM)
 
-class AxialPlaneDropout(DualTransform):
-    """Randomly drop out axial planes of input voxel.
+class PlaneDropout(DualTransform):
+    """Randomly drop out planes of input voxel along a dim.
     """
+    _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
+
     def __init__(
             self,
             dropout_rate=0.05,
@@ -171,36 +173,53 @@ class AxialPlaneDropout(DualTransform):
                 mask_fill_value: int or None
                     padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
         """
-        super(AxialPlaneDropout, self).__init__(always_apply, p)
+        super(PlaneDropout, self).__init__(always_apply, p)
 
         self.dropout_rate = M.prepare_inrange_zero_one_float(dropout_rate, 'dropout_rate')
 
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
         self.mask_fill_value = mask_fill_value
 
-    def apply(self, voxel, indices, **params):
-        return F.plane_dropout(voxel, indices, self.fill_value, C.AXIAL_DIM)
+    def apply(self, voxel, indices, dim, **params):
+        return F.plane_dropout(voxel, indices, self.fill_value, dim)
 
-    def apply_to_mask(self, mask, indices, **params):
+    def apply_to_mask(self, mask, indices, dim, **params):
         if self.mask_fill_value is None:
             return mask
         else:
-            return F.plane_dropout(mask, indices, self.fill_value, C.AXIAL_DIM)
+            return F.plane_dropout(mask, indices, self.fill_value, dim)
 
     @property
     def targets_as_params(self):
         return ['voxel']
 
     def get_params_dependent_on_targets(self, params):
-        depth = params['voxel'].shape[C.AXIAL_DIM]
-        size = int(depth*self.dropout_rate)
+        dim = np.random.choice(self._DIMS)
 
-        indices = np.random.choice(depth, size=size, replace=False)
+        shape = params['voxel'].shape[dim]
+        size = int(shape*self.dropout_rate)
 
-        return {'indices': indices}
+        indices = np.random.choice(shape, size=size, replace=False)
+
+        return {'indices': indices, 'dim': dim}
 
     def get_transform_init_args_names(self):
         return ('dropout_rate', 'fill_value', 'mask_fill_value')
+
+class HorizontalPlaneDropout(PlaneDropout):
+    """Randomly drop out horizontal planes of input voxel.
+    """
+    _DIMS = (C.HORIZONTAL_DIM, )
+
+class VerticalPlaneDropout(PlaneDropout):
+    """Randomly drop out vertical planes of input voxel.
+    """
+    _DIMS = (C.VERTICAL_DIM, )
+
+class AxialPlaneDropout(PlaneDropout):
+    """Randomly drop out axial planes of input voxel.
+    """
+    _DIMS = (C.AXIAL_DIM, )
 
 class AxialPlaneRotate(DualTransform):
     """Randomly rotate axial planes of input voxel.
@@ -208,8 +227,8 @@ class AxialPlaneRotate(DualTransform):
     def __init__(
             self,
             angle_limit=10,
-            border_mode=E.BorderType.CONSTANT,
-            interpolation=E.InterType.LINEAR,
+            border_mode=E.BorderType.DEFAULT,
+            interpolation=E.InterType.DEFAULT,
             fill_value=0,
             mask_fill_value=0,
             always_apply=False,
@@ -258,8 +277,8 @@ class AxialPlaneScale(DualTransform):
     def __init__(
             self,
             scale_limit=0.05,
-            border_mode=E.BorderType.CONSTANT,
-            interpolation=E.InterType.LINEAR,
+            border_mode=E.BorderType.DEFAULT,
+            interpolation=E.InterType.DEFAULT,
             fill_value=0,
             mask_fill_value=0,
             always_apply=False,
@@ -310,8 +329,8 @@ class AxialPlaneAffine(DualTransform):
             angle_limit=10,
             shift_limit=0.05,
             scale_limit=0.05,
-            border_mode=E.BorderType.CONSTANT,
-            interpolation=E.InterType.LINEAR,
+            border_mode=E.BorderType.DEFAULT,
+            interpolation=E.InterType.DEFAULT,
             fill_value=0,
             mask_fill_value=0,
             always_apply=False,
@@ -361,3 +380,97 @@ class AxialPlaneAffine(DualTransform):
 
     def get_transform_init_args_names(self):
         return ('angle_limit', 'scale_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
+
+class GaussNoise(VoxelOnlyTransform):
+    """Randomly add gaussian noise to the voxel.
+    """
+    def __init__(
+            self,
+            mean=0.,
+            variance=15,
+            per_channel=True,
+            always_apply=False,
+            p=0.5
+        ):
+        """
+            :args:
+                mean: float
+                    mean of gaussian noise
+                variance: float
+                    variance of gaussian noise
+                per_channel: bool
+                    if set to True, noise will be sampled for each channel independently
+        """
+        super(GaussNoise, self).__init__(always_apply, p)
+
+        self.mean = M.prepare_float(mean, 'mean')
+        self.variance = M.prepare_non_negative_float(variance, 'variance')
+        self.per_channel = per_channel
+
+    def apply(self, voxel, gauss, **params):
+        return F.gauss_noise(voxel, gauss)
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        if self.per_channel:
+            shape = params['voxel'].shape
+        else:
+            shape = params['voxel'].shape[:C.NUM_SPATIAL_DIMENSIONS]
+
+        gauss = np.random.normal(self.mean, self.variance**0.5, params['voxel'].shape)
+
+        return {'gauss': gauss}
+
+    def get_transform_init_args_names(self):
+        return ('mean', 'variance', 'per_channel')
+
+class GaussBlur(VoxelOnlyTransform):
+    """Blur by gaussian the voxel.
+    """
+    def __init__(
+            self,
+            variance=1.,
+            kernel_size_range=(3, 5),
+            always_apply=False,
+            p=0.5
+        ):
+        """
+            :args:
+                variance: float
+                    variance of gaussian kernel
+                kernel_size_range: (int, int)
+                    range for select kernel size of blur filter
+        """
+        super(GaussBlur, self).__init__(always_apply, p)
+
+        self.variance = M.prepare_non_negative_float(variance, 'variance')
+        self.kernel_size_range = M.prepare_int_asymrange(kernel_size_range, 'kernel_size_range', 0)
+
+        self.min_kernel_size = kernel_size_range[0]
+        self.max_kernel_size = kernel_size_range[1]
+
+        if self.min_kernel_size % 2 == 0 or self.max_kernel_size % 2 == 0:
+            raise ValueError('Invalid range borders. Must be odd, but got: {}.'.format(kernel_size_range))
+
+    def apply(self, voxel, kernel, **params):
+        return F.conv(voxel, kernel, E.BorderType.CONSTANT, 0)
+
+    def get_params(self):
+        kernel_size = 2 * np.random.randint(self.min_kernel_size // 2, self.max_kernel_size // 2 + 1) + 1
+
+        x = np.kron(np.arange(kernel_size), np.ones((kernel_size, kernel_size, 1)))
+        y = np.moveaxis(x, 0, -1)
+        z = np.moveaxis(y, 0, -1)
+
+        distances = (x - kernel_size // 2 )**2 + (y - kernel_size // 2 )**2 + (z - kernel_size // 2 )**2
+        kernel = np.exp( -0.5 * distances / self.variance )
+
+        kernel = kernel / kernel.sum()
+
+        return {'kernel': kernel}
+
+    def get_transform_init_args_names(self):
+        return ('variance', 'kernel_size_range')
