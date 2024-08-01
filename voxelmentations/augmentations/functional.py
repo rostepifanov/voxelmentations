@@ -108,15 +108,15 @@ def plane_affine(voxel, angle, shift, scale, interpolation, border_mode, fill_va
 
     return voxel
 
-def gauss_noise(voxel, gauss):
-    if len(voxel.shape) > len(gauss.shape):
-        gauss = np.expand_dims(gauss, axis=-1)
+def addition(voxel, extra):
+    if len(voxel.shape) > len(extra.shape):
+        extra = np.expand_dims(extra, axis=C.CHANNEL_DIM)
 
-    return voxel + gauss
+    return voxel + extra
 
 def conv(voxel, kernel, border_mode, fill_value):
     if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
-        kernel = np.expand_dims(kernel, axis=-1)
+        kernel = np.expand_dims(kernel, axis=C.CHANNEL_DIM)
 
     return sc.ndimage.convolve(
         voxel,
@@ -125,11 +125,32 @@ def conv(voxel, kernel, border_mode, fill_value):
         cval=fill_value,
     )
 
-def _plane_grid_distortion_cv_engine():
-    ...
+def grid_distort(voxel, ncells, cells, interpolation):
+    """
+        :NOTE:
+            see http://pythology.blogspot.sg/2014/03/interpolation-on-regular-distorted-grid.html
+    """
+    shape = np.array(voxel.shape[:C.NUM_SPATIAL_DIMENSIONS])
 
-def _plane_grid_distortion_sc_engine():
-    ...
+    func = lambda size: np.linspace(0., 1., size)
+    normed_coords = map(func, shape)
 
-def plane_grid_distortion():
-    ...
+    func = lambda coord, cell: np.interp(coord, cell, np.linspace(0., 1., ncells+1))
+    distorted_normed_coords = map(func, normed_coords, cells)
+
+    distorted_normed_grid = np.meshgrid(*distorted_normed_coords, indexing='ij')
+    distorted_normed_points = np.vstack([ coord.flatten() for coord in distorted_normed_grid ])
+    distorted_points = distorted_normed_points * (shape[:, None] - 1)
+
+    func = lambda arr: sc.ndimage.map_coordinates(
+        arr,
+        distorted_points,
+        order=C.MAP_INTER_TO_SC[interpolation]
+    ).reshape(*shape)
+
+    if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
+        voxel = apply_along_dim(voxel, func, C.CHANNEL_DIM)
+    else:
+        voxel = func(voxel)
+
+    return voxel

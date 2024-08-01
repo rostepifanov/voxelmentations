@@ -155,7 +155,7 @@ class DualTransform(Transform):
         }
 
     def apply_to_mask(self, mask, **params):
-        return self.apply(mask, **{k: E.InterType.NEAREST if k == 'interpolation' else v for k, v in params.items()})
+        return self.apply(mask, **params)
 
 class Identity(DualTransform):
     """Identity transform
