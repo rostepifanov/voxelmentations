@@ -5,6 +5,7 @@ import voxelmentations.core.enum as E
 VERTICAL_DIM = 0
 HORIZONTAL_DIM = 1
 AXIAL_DIM = 2
+CHANNEL_DIM = 3
 
 NUM_SPATIAL_DIMENSIONS = 3
 NUM_MONO_CHANNEL_DIMENSIONS = 3
@@ -37,4 +38,9 @@ MAP_BORDER_TYPE_TO_SC = {
 MAP_INTER_TO_CV2 = {
     E.InterType.NEAREST: cv2.INTER_NEAREST,
     E.InterType.LINEAR: cv2.INTER_LINEAR,
+}
+
+MAP_INTER_TO_SC = {
+    E.InterType.NEAREST: 0,
+    E.InterType.LINEAR: 1,
 }

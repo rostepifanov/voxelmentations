@@ -19,7 +19,7 @@ class PadIfNeeded(DualTransform):
             position=E.PositionType.CENTER,
             border_mode=E.BorderType.DEFAULT,
             fill_value=0.,
-            fill_mask_value=0,
+            mask_fill_value=0,
             always_apply=False,
             p=1.0,
         ):
@@ -37,8 +37,8 @@ class PadIfNeeded(DualTransform):
                     border mode
                 fill_value: int or float or None
                     padding value if border_mode is BorderType.CONSTANT
-                fill_mask_value: int or None
-                    padding value for mask if border_mode is cv2.BORDER_CONSTANT
+                mask_fill_value: int or None
+                    padding value for mask if border_mode is BorderType.CONSTANT
         """
         super(PadIfNeeded, self).__init__(always_apply, p)
 
@@ -50,13 +50,13 @@ class PadIfNeeded(DualTransform):
 
         self.border_mode = border_mode
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
-        self.fill_mask_value = M.prepare_int(fill_mask_value, 'fill_mask_value')
+        self.mask_fill_value = M.prepare_int(mask_fill_value, 'mask_fill_value')
 
     def apply(self, voxel, pads, **params):
         return F.pad(voxel, pads, self.border_mode, self.fill_value)
 
-    def apply(self, mask, pads, **params):
-        return F.pad(mask, pads, self.border_mode, self.fill_mask_value)
+    def apply_to_mask(self, mask, pads, **params):
+        return F.pad(mask, pads, self.border_mode, self.mask_fill_value)
 
     @property
     def targets_as_params(self):
@@ -98,7 +98,7 @@ class PadIfNeeded(DualTransform):
             back_pad = 0
         else:
             left_pad = np.random.randint(0, pad_height + 1)
-            rigth_pad = pad_height - left_pad
+            right_pad = pad_height - left_pad
 
             top_pad = np.random.randint(0, pad_width + 1)
             bottom_pad = pad_height - top_pad
@@ -107,7 +107,7 @@ class PadIfNeeded(DualTransform):
             back_pad = pad_height - front_pad
 
         pads = (
-            (left_pad, rigth_pad),
+            (left_pad, right_pad),
             (top_pad, bottom_pad),
             (front_pad, back_pad)
         )
@@ -115,7 +115,7 @@ class PadIfNeeded(DualTransform):
         return {'pads': pads}
 
     def get_transform_init_args_names(self):
-        return ('min_height', 'min_width', 'min_depth', 'position', 'border_mode', 'fill_value', 'fill_mask_value')
+        return ('min_height', 'min_width', 'min_depth', 'position', 'border_mode', 'fill_value', 'mask_fill_value')
 
 class Flip(DualTransform):
     """Flip the input voxel along a dim.
@@ -187,7 +187,7 @@ class PlaneDropout(DualTransform):
         if self.mask_fill_value is None:
             return mask
         else:
-            return F.plane_dropout(mask, indices, self.fill_value, dim)
+            return F.plane_dropout(mask, indices, self.mask_fill_value, dim)
 
     @property
     def targets_as_params(self):
@@ -253,20 +253,21 @@ class AxialPlaneRotate(DualTransform):
 
         self.border_mode = border_mode
         self.interpolation = interpolation
+        self.mask_interpolation = E.InterType.NEAREST
 
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
         self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
 
-    def apply(self, voxel, angle, interpolation, **params):
-        return F.plane_rotate(voxel, angle, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+    def apply(self, voxel, angle, **params):
+        return F.plane_rotate(voxel, angle, self.interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
 
-    def apply_to_mask(self, mask, angle, interpolation, **params):
-        return F.plane_rotate(mask, angle, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+    def apply_to_mask(self, mask, angle, **params):
+        return F.plane_rotate(mask, angle, self.mask_interpolation, self.border_mode, self.mask_fill_value, C.AXIAL_DIM)
 
     def get_params(self):
         angle = 180 * (2 * np.random.random() - 1) * self.angle_limit
 
-        return {'angle': angle, 'interpolation': self.interpolation}
+        return {'angle': angle}
 
     def get_transform_init_args_names(self):
         return ('angle_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
@@ -303,20 +304,21 @@ class AxialPlaneScale(DualTransform):
 
         self.border_mode = border_mode
         self.interpolation = interpolation
+        self.mask_interpolation = E.InterType.NEAREST
 
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
         self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
 
-    def apply(self, voxel, scale, interpolation, **params):
-        return F.plane_scale(voxel, scale, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+    def apply(self, voxel, scale, **params):
+        return F.plane_scale(voxel, scale, self.interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
 
-    def apply_to_mask(self, mask, scale, interpolation, **params):
-        return F.plane_scale(mask, scale, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+    def apply_to_mask(self, mask, scale, **params):
+        return F.plane_scale(mask, scale, self.mask_interpolation, self.border_mode, self.mask_fill_value, C.AXIAL_DIM)
 
     def get_params(self):
         scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
 
-        return {'scale': scale, 'interpolation': self.interpolation}
+        return {'scale': scale}
 
     def get_transform_init_args_names(self):
         return ('scale_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
@@ -361,22 +363,23 @@ class AxialPlaneAffine(DualTransform):
 
         self.border_mode = border_mode
         self.interpolation = interpolation
+        self.mask_interpolation = E.InterType.NEAREST
 
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
         self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
 
-    def apply(self, voxel, angle, shift, scale, interpolation, **params):
-        return F.plane_affine(voxel, angle, shift, scale, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+    def apply(self, voxel, angle, shift, scale, **params):
+        return F.plane_affine(voxel, angle, shift, scale, self.interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
 
-    def apply_to_mask(self, mask, angle, shift, scale, interpolation, **params):
-        return F.plane_affine(mask, angle, shift, scale, interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+    def apply_to_mask(self, mask, angle, shift, scale, **params):
+        return F.plane_affine(mask, angle, shift, scale, self.mask_interpolation, self.border_mode, self.mask_fill_value, C.AXIAL_DIM)
 
     def get_params(self):
         angle = 180 * (2 * np.random.random() - 1) * self.angle_limit
         shift = (2 * np.random.random() - 1) * self.shift_limit
         scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
 
-        return {'angle': angle, 'shift': shift, 'scale': scale, 'interpolation': self.interpolation}
+        return {'angle': angle, 'shift': shift, 'scale': scale}
 
     def get_transform_init_args_names(self):
         return ('angle_limit', 'scale_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
@@ -390,7 +393,7 @@ class GaussNoise(VoxelOnlyTransform):
             variance=15,
             per_channel=True,
             always_apply=False,
-            p=0.5
+            p=0.5,
         ):
         """
             :args:
@@ -408,19 +411,19 @@ class GaussNoise(VoxelOnlyTransform):
         self.per_channel = per_channel
 
     def apply(self, voxel, gauss, **params):
-        return F.gauss_noise(voxel, gauss)
+        return F.addition(voxel, gauss)
 
     @property
     def targets_as_params(self):
         return ['voxel']
 
     def get_params_dependent_on_targets(self, params):
-        if self.per_channel:
+        if self.per_channel and len(params['voxel'].shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
             shape = params['voxel'].shape
         else:
             shape = params['voxel'].shape[:C.NUM_SPATIAL_DIMENSIONS]
 
-        gauss = np.random.normal(self.mean, self.variance**0.5, params['voxel'].shape)
+        gauss = np.random.normal(self.mean, self.variance**0.5, shape)
 
         return {'gauss': gauss}
 
@@ -435,7 +438,7 @@ class GaussBlur(VoxelOnlyTransform):
             variance=1.,
             kernel_size_range=(3, 5),
             always_apply=False,
-            p=0.5
+            p=0.5,
         ):
         """
             :args:
@@ -474,3 +477,96 @@ class GaussBlur(VoxelOnlyTransform):
 
     def get_transform_init_args_names(self):
         return ('variance', 'kernel_size_range')
+
+class IntensityShift(VoxelOnlyTransform):
+    """Shift intensities of the voxel.
+    """
+    def __init__(
+            self,
+            shift_limit=10.,
+            per_channel=True,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                shift_limit: float
+                    limit of intensity shift
+                per_channel: bool
+                    if set to True, noise will be sampled for each channel independently
+        """
+        super(IntensityShift, self).__init__(always_apply, p)
+
+        self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
+        self.per_channel = per_channel
+
+    def apply(self, voxel, shift, **params):
+        return F.addition(voxel, shift)
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        if self.per_channel and len(params['voxel'].shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
+            nchannel = params['voxel'].shape[C.CHANNEL_DIM]
+            shift = (2 * np.random.random(nchannel) - 1) * self.shift_limit
+        else:
+            shift = (2 * np.random.random() - 1) * self.shift_limit
+
+        shift = np.expand_dims(shift, [C.VERTICAL_DIM, C.HORIZONTAL_DIM, C.AXIAL_DIM])
+
+        return {'shift': shift}
+
+    def get_transform_init_args_names(self):
+        return ('shift_limit', 'per_channel')
+
+class GridDistort(DualTransform):
+    """Randomly distort the voxel by grid.
+    """
+    def __init__(
+            self,
+            distort_limit=0.05,
+            ncells=4,
+            interpolation=E.InterType.DEFAULT,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                distort_limit: float
+                    limit of distortion
+                ncells: int
+                    grid size
+                interpolation: InterType
+                    interpolation mode
+        """
+        super(GridDistort, self).__init__(always_apply, p)
+
+        self.distort_limit = M.prepare_non_negative_float(distort_limit, 'distort_limit')
+        self.ncells = M.prepare_int(ncells, 'ncells')
+
+        self.interpolation = interpolation
+        self.mask_interpolation = E.InterType.NEAREST
+
+    def apply(self, voxel, cells, **params):
+        return F.grid_distort(voxel, self.ncells, cells, self.interpolation)
+
+    def apply_to_mask(self, mask, cells, **params):
+        return F.grid_distort(mask, self.ncells, cells, self.mask_interpolation)
+
+    def get_params(self):
+        func = lambda _: np.linspace(0., 1., self.ncells+1)
+        cells = tuple(map(func, range(C.NUM_SPATIAL_DIMENSIONS)))
+
+        if self.ncells > 1:
+            for cell in cells:
+                directions = np.random.choice([-1, 1], size=self.ncells-1)
+                magnitudes = np.random.random(size=self.ncells-1) * self.distort_limit * 0.5
+
+                cell[1:-1] += directions * magnitudes / (self.ncells+1)
+
+        return {'cells': cells}
+
+    def get_transform_init_args_names(self):
+        return ('distort_limit', 'ncells', 'interpolation')

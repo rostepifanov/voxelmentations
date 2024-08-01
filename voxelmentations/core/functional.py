@@ -12,8 +12,8 @@ def preserve_channel_dim(func):
         shape = input.shape
         output = func(input, *args, **kwargs)
 
-        if len(shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS and shape[-1] == 1 and output.ndim == C.NUM_MONO_CHANNEL_DIMENSIONS:
-            return np.expand_dims(output, axis=-1)
+        if len(shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS and shape[C.CHANNEL_DIM] == 1 and output.ndim == C.NUM_MONO_CHANNEL_DIMENSIONS:
+            return np.expand_dims(output, axis=C.CHANNEL_DIM)
 
         if len(shape) == C.NUM_MONO_CHANNEL_DIMENSIONS and output.ndim == C.NUM_MULTI_CHANNEL_DIMENSIONS:
             return output[:, :, 0]
