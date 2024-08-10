@@ -242,3 +242,25 @@ def test_plane_affine_CASE_rotation_AND_shift():
     )
 
     assert np.allclose(output, expected)
+
+def test_distort_CASE_identity():
+    input = np.expand_dims(
+        np.array([1, 2, 3, 4]),
+        axis=(1, 2, 3)
+    )
+
+    expected = np.expand_dims(
+        np.array([1, 2, 3, 4]),
+        axis=(1, 2, 3)
+    )
+
+    shape = np.array(input.shape[:C.NUM_SPATIAL_DIMENSIONS])
+
+    func = lambda size: np.linspace(0., size-1, size)
+    points = map(func, shape)
+
+    grid = np.meshgrid(*points, indexing='ij')
+
+    output = F.distort(input, grid, E.InterType.LINEAR)
+
+    assert np.allclose(output, expected)

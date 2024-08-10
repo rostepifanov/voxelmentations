@@ -44,7 +44,7 @@ transform = V.Sequential([
 # Create example 3d image (height, width, depth, nchannels)
 input = np.ones((32, 32, 32, 1))
 
-# Augment exg
+# Augment voxel
 transformed = transform(voxel=input)
 output = transformed['voxel']
 ```
@@ -56,10 +56,21 @@ The list of transforms:
 - [Flip]()
 - [AxialFlip]()
 - [AxialPlaneFlip]()
-- [AxialPlaneDropout]()
 - [AxialPlaneRotate]()
 - [AxialPlaneScale]()
 - [AxialPlaneAffine]()
+- [GridDistort]()
+- [ElasticDistort]()
+- [RandomGamma]()
+- [IntensityShift]()
+- [GaussBlur]()
+- [GaussNoise]()
+- [PlaneDropout]()
+- [HorizontalPlaneDropout]()
+- [VerticalPlaneDropout]()
+- [AxialPlaneDropout]()
+- [PatchDropout]()
+- [PatchShuffle]()
 
 ## Citing
 
