@@ -9,7 +9,7 @@ import voxelmentations.augmentations.functional as F
 from voxelmentations.core.transforms import VoxelOnlyTransform, DualTransform
 
 class PadIfNeeded(DualTransform):
-    """Pad shape of the voxel to the minimal shape.
+    """Pad shape of a voxel to a minimal shape.
     """
     def __init__(
             self,
@@ -118,7 +118,7 @@ class PadIfNeeded(DualTransform):
         return ('min_height', 'min_width', 'min_depth', 'position', 'border_mode', 'fill_value', 'mask_fill_value')
 
 class Flip(DualTransform):
-    """Flip the input voxel along a dim.
+    """Flip a voxel along a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
 
@@ -142,87 +142,17 @@ class Flip(DualTransform):
         return tuple()
 
 class AxialFlip(Flip):
-    """Flip the input voxel in z dim.
+    """Flip a voxel in z dim.
     """
     _DIMS = (C.AXIAL_DIM, )
 
 class AxialPlaneFlip(Flip):
-    """Flip the input voxel in x-y plane.
+    """Flip a voxel in x-y plane.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM)
 
-class PlaneDropout(DualTransform):
-    """Randomly drop out planes of input voxel along a dim.
-    """
-    _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
-
-    def __init__(
-            self,
-            dropout_rate=0.05,
-            fill_value=0.,
-            mask_fill_value=None,
-            always_apply=False,
-            p=0.5,
-        ):
-        """
-            :args:
-                dropout_rate: float
-                    percent of dropped planes
-                fill_value: float
-                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
-                mask_fill_value: int or None
-                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
-        """
-        super(PlaneDropout, self).__init__(always_apply, p)
-
-        self.dropout_rate = M.prepare_inrange_zero_one_float(dropout_rate, 'dropout_rate')
-
-        self.fill_value = M.prepare_float(fill_value, 'fill_value')
-        self.mask_fill_value = mask_fill_value
-
-    def apply(self, voxel, indices, dim, **params):
-        return F.plane_dropout(voxel, indices, self.fill_value, dim)
-
-    def apply_to_mask(self, mask, indices, dim, **params):
-        if self.mask_fill_value is None:
-            return mask
-        else:
-            return F.plane_dropout(mask, indices, self.mask_fill_value, dim)
-
-    @property
-    def targets_as_params(self):
-        return ['voxel']
-
-    def get_params_dependent_on_targets(self, params):
-        dim = np.random.choice(self._DIMS)
-
-        shape = params['voxel'].shape[dim]
-        size = int(shape*self.dropout_rate)
-
-        indices = np.random.choice(shape, size=size, replace=False)
-
-        return {'indices': indices, 'dim': dim}
-
-    def get_transform_init_args_names(self):
-        return ('dropout_rate', 'fill_value', 'mask_fill_value')
-
-class HorizontalPlaneDropout(PlaneDropout):
-    """Randomly drop out horizontal planes of input voxel.
-    """
-    _DIMS = (C.HORIZONTAL_DIM, )
-
-class VerticalPlaneDropout(PlaneDropout):
-    """Randomly drop out vertical planes of input voxel.
-    """
-    _DIMS = (C.VERTICAL_DIM, )
-
-class AxialPlaneDropout(PlaneDropout):
-    """Randomly drop out axial planes of input voxel.
-    """
-    _DIMS = (C.AXIAL_DIM, )
-
 class AxialPlaneRotate(DualTransform):
-    """Randomly rotate axial planes of input voxel.
+    """Randomly rotate axial planes of a voxel.
     """
     def __init__(
             self,
@@ -273,7 +203,7 @@ class AxialPlaneRotate(DualTransform):
         return ('angle_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
 
 class AxialPlaneScale(DualTransform):
-    """Randomly scale axial planes of input voxel.
+    """Randomly scale axial planes of a voxel.
     """
     def __init__(
             self,
@@ -324,7 +254,7 @@ class AxialPlaneScale(DualTransform):
         return ('scale_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
 
 class AxialPlaneAffine(DualTransform):
-    """Randomly deform axial planes of input voxel.
+    """Randomly deform axial planes of a voxel.
     """
     def __init__(
             self,
@@ -385,7 +315,7 @@ class AxialPlaneAffine(DualTransform):
         return ('angle_limit', 'scale_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
 
 class GaussNoise(VoxelOnlyTransform):
-    """Randomly add gaussian noise to the voxel.
+    """Randomly add gaussian noise to a voxel.
     """
     def __init__(
             self,
@@ -431,7 +361,7 @@ class GaussNoise(VoxelOnlyTransform):
         return ('mean', 'variance', 'per_channel')
 
 class GaussBlur(VoxelOnlyTransform):
-    """Blur by gaussian the voxel.
+    """Blur by gaussian a voxel.
     """
     def __init__(
             self,
@@ -479,7 +409,7 @@ class GaussBlur(VoxelOnlyTransform):
         return ('variance', 'kernel_size_range')
 
 class IntensityShift(VoxelOnlyTransform):
-    """Shift intensities of the voxel.
+    """Shift intensities of a voxel.
     """
     def __init__(
             self,
@@ -522,7 +452,7 @@ class IntensityShift(VoxelOnlyTransform):
         return ('shift_limit', 'per_channel')
 
 class GridDistort(DualTransform):
-    """Randomly distort the voxel by grid.
+    """Randomly distort a voxel by grid.
     """
     def __init__(
             self,
@@ -549,13 +479,19 @@ class GridDistort(DualTransform):
         self.interpolation = interpolation
         self.mask_interpolation = E.InterType.NEAREST
 
-    def apply(self, voxel, cells, **params):
-        return F.grid_distort(voxel, self.ncells, cells, self.interpolation)
+    def apply(self, voxel, distorted_grid, **params):
+        return F.distort(voxel, distorted_grid, self.interpolation)
 
-    def apply_to_mask(self, mask, cells, **params):
-        return F.grid_distort(mask, self.ncells, cells, self.mask_interpolation)
+    def apply_to_mask(self, mask, distorted_grid, **params):
+        return F.distort(mask, distorted_grid, self.mask_interpolation)
 
-    def get_params(self):
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        shape = np.array(params['voxel'].shape[:C.NUM_SPATIAL_DIMENSIONS])
+
         func = lambda _: np.linspace(0., 1., self.ncells+1)
         cells = tuple(map(func, range(C.NUM_SPATIAL_DIMENSIONS)))
 
@@ -566,7 +502,315 @@ class GridDistort(DualTransform):
 
                 cell[1:-1] += directions * magnitudes / (self.ncells+1)
 
-        return {'cells': cells}
+        func = lambda size: np.linspace(0., 1., size)
+        points = map(func, shape)
+
+        func = lambda point, cell, size: size * np.interp(point, cell, np.linspace(0., 1., self.ncells+1))
+        distorted_points = map(func, points, cells, shape-1)
+        distorted_grid = np.meshgrid(*distorted_points, indexing='ij')
+
+        return {'distorted_grid': distorted_grid}
 
     def get_transform_init_args_names(self):
         return ('distort_limit', 'ncells', 'interpolation')
+
+class ElasticDistort(DualTransform):
+    """Randomly elastic distort a voxel.
+    """
+    def __init__(
+            self,
+            distort_limit=0.05,
+            sigma=1,
+            interpolation=E.InterType.DEFAULT,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                distort_limit: float
+                    limit of distortion
+                sigma: float
+                    smoothness of transformation
+                interpolation: InterType
+                    interpolation mode
+        """
+        super(ElasticDistort, self).__init__(always_apply, p)
+
+        self.distort_limit = M.prepare_non_negative_float(distort_limit, 'distort_limit')
+        self.sigma = M.prepare_float(sigma, 'sigma')
+
+        self.interpolation = interpolation
+        self.mask_interpolation = E.InterType.NEAREST
+
+    def apply(self, voxel, distorted_grid, **params):
+        return F.distort(voxel, distorted_grid, self.interpolation)
+
+    def apply_to_mask(self, mask, distorted_grid, **params):
+        return F.distort(mask, distorted_grid, self.mask_interpolation)
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        shape = np.array(params['voxel'].shape[:C.NUM_SPATIAL_DIMENSIONS])
+
+        func = lambda size: np.linspace(0., size-1, size)
+        points = map(func, shape)
+
+        grid = np.meshgrid(*points, indexing='ij')
+        distorted_grid = grid
+
+        return {'distorted_grid': distorted_grid}
+
+    def get_transform_init_args_names(self):
+        return ('distort_limit', 'sigma', 'interpolation')
+
+class RandomGamma(VoxelOnlyTransform):
+    """Apply gamma transform to intensities of a voxel.
+    """
+    def __init__(
+            self,
+            gamma_range=(0.8, 1.2),
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                gamma_range: (float, float)
+                    limit of intensity shift
+        """
+        super(RandomGamma, self).__init__(always_apply, p)
+
+        self.gamma_range = M.prepare_float_asymrange(gamma_range, 'gamma_range', 0.)
+
+        self.min_gamma = gamma_range[0]
+        self.max_gamma = gamma_range[1]
+
+    def apply(self, voxel, gamma, **params):
+        return F.gamma_transform(voxel, gamma)
+
+    def get_params(self):
+        gamma = np.random.uniform(self.min_gamma, self.max_gamma)
+
+        return {'gamma': gamma}
+
+    def get_transform_init_args_names(self):
+        return ('gamma_range', )
+
+class PlaneDropout(VoxelOnlyTransform):
+    """Randomly drop out planes of a voxel along a dim.
+    """
+    _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
+
+    def __init__(
+            self,
+            nplanes=3,
+            fill_value=0.,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                nplanes: int
+                    number of dropping planes
+                fill_value: float
+                    filling value of voxel
+        """
+        super(PlaneDropout, self).__init__(always_apply, p)
+
+        self.nplanes = M.prepare_non_negative_int(nplanes, 'nplanes')
+
+        self.fill_value = M.prepare_float(fill_value, 'fill_value')
+
+    def apply(self, voxel, indices, dim, **params):
+        return F.plane_dropout(voxel, indices, self.fill_value, dim)
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        dim = np.random.choice(self._DIMS)
+        size = params['voxel'].shape[dim]
+
+        indices = np.random.choice(size, size=self.nplanes, replace=False)
+
+        return {'indices': indices, 'dim': dim}
+
+    def get_transform_init_args_names(self):
+        return ('nplanes', 'fill_value')
+
+class HorizontalPlaneDropout(PlaneDropout):
+    """Randomly drop out horizontal planes of a voxel.
+    """
+    _DIMS = (C.HORIZONTAL_DIM, )
+
+class VerticalPlaneDropout(PlaneDropout):
+    """Randomly drop out vertical planes of a voxel.
+    """
+    _DIMS = (C.VERTICAL_DIM, )
+
+class AxialPlaneDropout(PlaneDropout):
+    """Randomly drop out axial planes of a voxel.
+    """
+    _DIMS = (C.AXIAL_DIM, )
+
+class PatchDropout(VoxelOnlyTransform):
+    """Randomly drop out patches of a voxel.
+    """
+    def __init__(
+            self,
+            npatches=3,
+            height_range=(8, 8),
+            width_range=(8, 8),
+            depth_range=(8, 8),
+            fill_value=0.,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                npatches: int
+                    number of dropping pathes
+                height_range: (int, int)
+                     range for selecting of the height of patch
+                width_range: (int, int)
+                     range for selecting of the width of patch
+                depth_range: (int, int)
+                     range for selecting of the depth of patch
+                fill_value: float
+                    filling value of voxel
+        """
+        super(PatchDropout, self).__init__(always_apply, p)
+
+        self.npatches = M.prepare_non_negative_int(npatches, 'npatches')
+
+        self.height_range = M.prepare_int_asymrange(height_range, 'height_range', 0)
+
+        self.min_height_range = height_range[0]
+        self.max_height_range = height_range[1]
+
+        self.width_range = M.prepare_int_asymrange(width_range, 'width_range', 0)
+
+        self.min_width_range = width_range[0]
+        self.max_width_range = width_range[1]
+
+        self.depth_range = M.prepare_int_asymrange(depth_range, 'depth_range', 0)
+
+        self.min_depth_range = depth_range[0]
+        self.max_depth_range = depth_range[1]
+
+        self.fill_value = M.prepare_float(fill_value, 'fill_value')
+
+    def apply(self, voxel, patches, **params):
+        return F.patch_dropout(voxel, patches, self.fill_value)
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        shape = params['voxel'].shape[:C.NUM_SPATIAL_DIMENSIONS]
+
+        patch_shape_ranges = (
+            (self.min_height_range, self.max_height_range + 1),
+            (self.min_width_range, self.max_width_range + 1),
+            (self.min_depth_range, self.max_depth_range + 1),
+        )
+
+        patches = []
+
+        for _ in range(self.npatches):
+            selector = tuple()
+
+            for size, patch_size_range in zip(shape, patch_shape_ranges):
+                patch_size = np.random.randint(*patch_size_range)
+                start = np.random.randint(0, size - patch_size + 1)
+                end = start + patch_size
+
+                selector = (*selector, slice(start, end))
+
+            patches.append(selector)
+
+        return {'patches': patches}
+
+    def get_transform_init_args_names(self):
+        return ('npatches', 'height_range', 'width_range', 'depth_range', 'fill_value')
+
+class PatchShuffle(VoxelOnlyTransform):
+    """Randomly shuffle pixels in patches of a voxel.
+    """
+    def __init__(
+            self,
+            npatches=3,
+            height_range=(8, 8),
+            width_range=(8, 8),
+            depth_range=(8, 8),
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                npatches: int
+                    number of dropping pathes
+                height_range: (int, int)
+                     range for selecting of the height of patch
+                width_range: (int, int)
+                     range for selecting of the width of patch
+                depth_range: (int, int)
+                     range for selecting of the depth of patch
+        """
+        super(PatchShuffle, self).__init__(always_apply, p)
+
+        self.npatches = M.prepare_non_negative_int(npatches, 'npatches')
+
+        self.height_range = M.prepare_int_asymrange(height_range, 'height_range', 0)
+
+        self.min_height_range = height_range[0]
+        self.max_height_range = height_range[1]
+
+        self.width_range = M.prepare_int_asymrange(width_range, 'width_range', 0)
+
+        self.min_width_range = width_range[0]
+        self.max_width_range = width_range[1]
+
+        self.depth_range = M.prepare_int_asymrange(depth_range, 'depth_range', 0)
+
+        self.min_depth_range = depth_range[0]
+        self.max_depth_range = depth_range[1]
+
+    def apply(self, voxel, patches, **params):
+        return F.patch_shuffle(voxel, patches)
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        shape = params['voxel'].shape[:C.NUM_SPATIAL_DIMENSIONS]
+
+        patch_shape_ranges = (
+            (self.min_height_range, self.max_height_range + 1),
+            (self.min_width_range, self.max_width_range + 1),
+            (self.min_depth_range, self.max_depth_range + 1),
+        )
+
+        patches = []
+
+        for _ in range(self.npatches):
+            selector = tuple()
+
+            for size, patch_size_range in zip(shape, patch_shape_ranges):
+                patch_size = np.random.randint(*patch_size_range)
+                start = np.random.randint(0, size - patch_size + 1)
+                end = start + patch_size
+
+                selector = (*selector, slice(start, end))
+
+            patches.append(selector)
+
+        return {'patches': patches}
+
+    def get_transform_init_args_names(self):
+        return ('npatches', 'height_range', 'width_range', 'depth_range')

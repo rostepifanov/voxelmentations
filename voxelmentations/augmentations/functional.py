@@ -37,14 +37,6 @@ def pad(voxel, pads, border_mode, fill_value):
 def flip(voxel, dims):
     return np.flip(voxel, dims)
 
-def plane_dropout(voxel, indices, value, dim):
-    voxel = np.copy(voxel)
-
-    selector = [ slice(0, None) for _ in range(dim) ]
-    voxel[(*selector, indices)] = value
-
-    return voxel
-
 @F.preserve_channel_dim
 def plane_rotate(voxel, angle, interpolation, border_mode, fill_value, dim):
     """Perform clockwise rotation of planes along the dim
@@ -125,22 +117,13 @@ def conv(voxel, kernel, border_mode, fill_value):
         cval=fill_value,
     )
 
-def grid_distort(voxel, ncells, cells, interpolation):
+def distort(voxel, distorted_grid, interpolation):
     """
         :NOTE:
             see http://pythology.blogspot.sg/2014/03/interpolation-on-regular-distorted-grid.html
     """
-    shape = np.array(voxel.shape[:C.NUM_SPATIAL_DIMENSIONS])
-
-    func = lambda size: np.linspace(0., 1., size)
-    normed_coords = map(func, shape)
-
-    func = lambda coord, cell: np.interp(coord, cell, np.linspace(0., 1., ncells+1))
-    distorted_normed_coords = map(func, normed_coords, cells)
-
-    distorted_normed_grid = np.meshgrid(*distorted_normed_coords, indexing='ij')
-    distorted_normed_points = np.vstack([ coord.flatten() for coord in distorted_normed_grid ])
-    distorted_points = distorted_normed_points * (shape[:, None] - 1)
+    shape = voxel.shape[:C.NUM_SPATIAL_DIMENSIONS]
+    distorted_points = np.vstack([ points.flatten() for points in distorted_grid ])
 
     func = lambda arr: sc.ndimage.map_coordinates(
         arr,
@@ -152,5 +135,40 @@ def grid_distort(voxel, ncells, cells, interpolation):
         voxel = apply_along_dim(voxel, func, C.CHANNEL_DIM)
     else:
         voxel = func(voxel)
+
+    return voxel
+
+def gamma_transform(voxel, gamma):
+    values = np.abs(voxel)
+    signs = np.sign(voxel)
+
+    voxel = np.power(values, gamma) * signs
+
+    return voxel
+
+def plane_dropout(voxel, indices, value, dim):
+    voxel = np.copy(voxel)
+
+    selector = [ slice(0, None) for _ in range(dim) ]
+    voxel[(*selector, indices)] = value
+
+    return voxel
+
+def patch_dropout(voxel, patches, value):
+    voxel = np.copy(voxel)
+
+    for patch in patches:
+        voxel[patch] = value
+
+    return voxel
+
+def patch_shuffle(voxel, patches):
+    voxel = np.copy(voxel)
+
+    for patch in patches:
+        pixels = voxel[patch]
+        np.random.shuffle(pixels)
+
+        voxel[patch] = pixels
 
     return voxel
