@@ -8,6 +8,10 @@ SHAPE_PRESERVED_TRANSFORMS = [
     V.Flip,
     V.AxialFlip,
     V.AxialPlaneFlip,
+    V.Rotate90,
+    V.AxialPlaneRotate90,
+    V.Tranpose,
+    V.AxialPlaneTranpose,
     V.AxialPlaneRotate,
     V.AxialPlaneScale,
     V.AxialPlaneAffine,
@@ -15,8 +19,8 @@ SHAPE_PRESERVED_TRANSFORMS = [
     V.GaussBlur,
     V.IntensityShift,
     V.GridDistort,
-    V.ElasticDistort,
-    V.RandomGamma,
+    # V.ElasticDistort,
+    V.Gamma,
     V.PlaneDropout,
     V.HorizontalPlaneDropout,
     V.VerticalPlaneDropout,
@@ -31,8 +35,6 @@ SHAPE_UNPRESERVED_TRANSFORMS = [
 
 MASK_FILL_VALUE_TRANSFORMS = {
     V.PadIfNeeded: {'pads': ((1, 1), (1, 1), (1, 1))},
-    V.AxialPlaneRotate: {'angle': 5.},
-    V.AxialPlaneScale: {'scale': 0.95},
     V.AxialPlaneAffine: {'angle': 5., 'shift': 0., 'scale': 0.95},
 }
 
