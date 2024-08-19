@@ -83,6 +83,18 @@ class Sequential(Compose):
 
         return data
 
+class NonSequential(Sequential):
+    """Compose transforms to apply sequentially in random order.
+    """
+    def __call__(self, *args, force_apply=False, **data):
+        if self.whether_apply(force_apply):
+            np.random.shuffle(self.transforms)
+
+            for transform in self.transforms:
+                data = transform(**data)
+
+        return data
+
 class OneOf(Compose):
     """Select one of transforms to apply.
     """

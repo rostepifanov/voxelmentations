@@ -83,7 +83,7 @@ def test_pad_CASE_left_AND_replicate_border():
 
     assert np.allclose(output, expected)
 
-def test_plane_rotate_CASE_90_degree():
+def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
     input = np.expand_dims(
         np.array([
             [ 1,  2,  3,  4],
@@ -104,14 +104,18 @@ def test_plane_rotate_CASE_90_degree():
         axis=(2, 3)
     )
 
+    scale = 1.
+    shift = 0.
     angle = 90
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
     dim = C.AXIAL_DIM
 
-    output = F.plane_rotate(
+    output = F.plane_affine(
         input,
+        scale,
+        shift,
         angle,
         interpolation,
         border_mode,
@@ -121,7 +125,49 @@ def test_plane_rotate_CASE_90_degree():
 
     assert np.allclose(output, expected)
 
-def test_plane_scale_CASE_upscale_twice():
+def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
+    input = np.expand_dims(
+        np.array([
+            [ 1,  2],
+            [ 5,  6],
+            [ 9, 10],
+            [13, 14],
+        ]),
+        axis=(2, 3)
+    )
+
+    expected = np.expand_dims(
+        np.array([
+            [ 0, 0],
+            [ 9, 5],
+            [10, 6],
+            [ 0, 0],
+        ]),
+        axis=(2, 3)
+    )
+
+    scale = 1.
+    shift = 0.
+    angle = 90.
+    interpolation = E.InterType.NEAREST
+    border_mode = E.BorderType.CONSTANT
+    fill_value = 0
+    dim = C.AXIAL_DIM
+
+    output = F.plane_affine(
+        input,
+        scale,
+        shift,
+        angle,
+        interpolation,
+        border_mode,
+        fill_value,
+        dim
+    )
+
+    assert np.allclose(output, expected)
+
+def test_plane_scale_CASE_twice_isotropic_upscaling():
     input = np.expand_dims(
         np.array([
             [ 1,  2,  3,  4],
@@ -142,15 +188,19 @@ def test_plane_scale_CASE_upscale_twice():
         axis=(2, 3)
     )
 
-    scale = 2
+    scale = 2.
+    shift = 0.
+    angle = 0.
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
     dim = C.AXIAL_DIM
 
-    output = F.plane_scale(
+    output = F.plane_affine(
         input,
         scale,
+        shift,
+        angle,
         interpolation,
         border_mode,
         fill_value,
@@ -190,9 +240,9 @@ def test_plane_affine_CASE_only_shift():
 
     output = F.plane_affine(
         input,
-        angle,
-        shift,
         scale,
+        shift,
+        angle,
         interpolation,
         border_mode,
         fill_value,
@@ -214,17 +264,17 @@ def test_plane_affine_CASE_rotation_AND_shift():
 
     expected = np.expand_dims(
         np.array([
-            [ 0,  0,  0,  0],
-            [ 0, 13,  9,  5],
-            [ 0, 14, 10,  6],
-            [ 0, 15, 11 , 7],
+            [  0, 0, 0, 0 ],
+            [  9, 5, 1, 0 ],
+            [ 10, 6, 2, 0 ],
+            [ 11, 7, 3, 0 ],
         ]),
         axis=(2, 3)
     )
 
-    angle = 90
+    scale = 1.
     shift = 0.25
-    scale = 1
+    angle = 90.
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -232,9 +282,9 @@ def test_plane_affine_CASE_rotation_AND_shift():
 
     output = F.plane_affine(
         input,
-        angle,
-        shift,
         scale,
+        shift,
+        angle,
         interpolation,
         border_mode,
         fill_value,

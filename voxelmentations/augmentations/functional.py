@@ -4,7 +4,8 @@ import numpy as np
 
 import voxelmentations.core.enum as E
 import voxelmentations.core.constants as C
-import voxelmentations.core.functional as F
+import voxelmentations.augmentations.utils.decorators as D
+import voxelmentations.augmentations.utils.geometrical as G
 
 def apply_along_dim(data, func, dim):
     """Apply the same transformation along the dim
@@ -37,59 +38,26 @@ def pad(voxel, pads, border_mode, fill_value):
 def flip(voxel, dims):
     return np.flip(voxel, dims)
 
-@F.preserve_channel_dim
-def plane_rotate(voxel, angle, interpolation, border_mode, fill_value, dim):
-    """Perform clockwise rotation of planes along the dim
-    """
-    shape = (*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS])
+def rot90(voxel, dims, times):
+    return np.rot90(voxel, times, dims)
 
-    point = [ 0.5 * ishape - 0.5 for ishape in shape ][::-1]
-    T = cv2.getRotationMatrix2D(point, -angle, 1.)
+def transpose(voxel, dims):
+    return np.swapaxes(voxel, *dims)
 
-    func = lambda arr: cv2.warpAffine(
-        arr,
-        T,
-        shape,
-        flags=C.MAP_INTER_TO_CV2[interpolation],
-        borderMode=C.MAP_BORDER_TYPE_TO_CV2[border_mode],
-        borderValue=fill_value,
-    )
+@D.preserve_channel_dim
+def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_value, dim):
+    shape = [*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS]][::-1]
+    point = [ 0.5 * ishape - 0.5 for ishape in shape ]
 
-    voxel = apply_along_dim(voxel, func, dim)
+    K = G.get_translation_matrix(np.array(point))
+    T = G.get_affine_matrix((scale, scale), np.array(shape) * shift, angle)
 
-    return voxel
-
-@F.preserve_channel_dim
-def plane_scale(voxel, scale, interpolation, border_mode, fill_value, dim):
-    shape = (*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS])
-
-    point = [ 0.5 * ishape - 0.5 for ishape in shape ][::-1]
-    T = cv2.getRotationMatrix2D(point, 0., scale)
+    M = K @ T @ np.linalg.inv(K)
+    M = M[:2]
 
     func = lambda arr: cv2.warpAffine(
         arr,
-        T,
-        shape,
-        flags=C.MAP_INTER_TO_CV2[interpolation],
-        borderMode=C.MAP_BORDER_TYPE_TO_CV2[border_mode],
-        borderValue=fill_value,
-    )
-
-    voxel = apply_along_dim(voxel, func, dim)
-
-    return voxel
-
-@F.preserve_channel_dim
-def plane_affine(voxel, angle, shift, scale, interpolation, border_mode, fill_value, dim):
-    shape = (*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS])
-
-    point = [ 0.5 * ishape - 0.5 for ishape in shape ][::-1]
-    T = cv2.getRotationMatrix2D(point, -angle, scale)
-    T[:, 2] += np.array(shape) * shift
-
-    func = lambda arr: cv2.warpAffine(
-        arr,
-        T,
+        M,
         shape,
         flags=C.MAP_INTER_TO_CV2[interpolation],
         borderMode=C.MAP_BORDER_TYPE_TO_CV2[border_mode],
