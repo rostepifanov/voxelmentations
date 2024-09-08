@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 
 import voxelmentations.core.enum as E
@@ -192,7 +191,7 @@ class Tranpose(DualTransform):
     def get_transform_init_args_names(self):
         return tuple()
 
-class AxialPlaneTranpose(Rotate90):
+class AxialPlaneTranpose(Tranpose):
     """Transpose a voxel in x-y plane.
     """
     _DIMS = (C.AXIAL_DIM, )
@@ -217,7 +216,7 @@ class AxialPlaneAffine(DualTransform):
                 scale_limit: float
                     limit of scaling
                 shift_limit: float
-                    limit of shifting in percentage
+                    limit of translation as ratio of size
                 angle_limit: float
                     limit of rotation in degrees [0, 180]
                 border_mode: BorderType
@@ -250,7 +249,7 @@ class AxialPlaneAffine(DualTransform):
 
     def get_params(self):
         scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
-        shift = (2 * np.random.random() - 1) * self.shift_limit
+        shift = (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shift_limit
         angle = 180 * (2 * np.random.random() - 1) * self.angle_limit
 
         return {'scale': scale, 'shift': shift, 'angle': angle}
