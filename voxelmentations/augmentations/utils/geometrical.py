@@ -34,8 +34,8 @@ def get_translation_matrix(shifts):
 
     return M
 
-def get_scale_matrix(scales):
-    """Get 3x3 scale matrix for planar transformation
+def get_scaling_matrix(scales):
+    """Get 3x3 scaling matrix for planar transformation
 
         :args:
             scales: (float, float)
@@ -71,7 +71,7 @@ def get_shear_matrix(shears):
     return M
 
 def get_affine_matrix(scales, shiftes, angle):
-    T1 = get_scale_matrix(scales)
+    T1 = get_scaling_matrix(scales)
 
     T3 = get_translation_matrix(shiftes)
     T4 = get_rotation_matrix(angle)
