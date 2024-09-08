@@ -16,7 +16,7 @@ def shorten_class_name(class_fullname):
 
     top_module, *_, class_name = splitted
 
-    if top_module == 'exgment':
+    if top_module == 'voxelmentations':
         return class_name
 
     return class_fullname

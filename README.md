@@ -77,7 +77,7 @@ The list of transforms:
 If you find this library useful for your research, please consider citing:
 
 ```
-@misc{epifanov2024exgment,
+@misc{epifanov2024voxelmentations,
   Author = {Rostislav Epifanov},
   Title = {voxelmentations},
   Year = {2024},

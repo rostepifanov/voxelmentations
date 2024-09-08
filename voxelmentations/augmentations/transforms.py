@@ -325,7 +325,7 @@ class GaussNoise(VoxelOnlyTransform):
     def __init__(
             self,
             mean=0.,
-            variance=15,
+            variance=15.,
             per_channel=True,
             always_apply=False,
             p=0.5,
