@@ -142,20 +142,17 @@ class VoxelOnlyTransform(Transform):
 
     @property
     def targets(self):
-        return { 'voxel': self.apply }
+        return {'voxel': self.apply}
 
 class DualTransform(Transform):
     """Transform for segmentation task
     """
-    @property
-    def targets(self):
-        return {
-            'voxel': self.apply,
-            'mask': self.apply_to_mask,
-        }
-
     def apply_to_mask(self, mask, **params):
         return self.apply(mask, **params)
+
+    @property
+    def targets(self):
+        return {'voxel': self.apply, 'mask': self.apply_to_mask}
 
 class Identity(DualTransform):
     """Identity transform
