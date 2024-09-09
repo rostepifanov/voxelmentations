@@ -68,11 +68,14 @@ def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_va
 
     return voxel
 
-def addition(voxel, extra):
-    if len(voxel.shape) > len(extra.shape):
-        extra = np.expand_dims(extra, axis=C.CHANNEL_DIM)
+def add(voxel, other):
+    if len(voxel.shape) > len(other.shape):
+        other = np.expand_dims(other, axis=C.CHANNEL_DIM)
 
-    return voxel + extra
+    return voxel + other
+
+def multiply(voxel, coef):
+    return coef * voxel
 
 def conv(voxel, kernel, border_mode, fill_value):
     if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:

@@ -346,7 +346,7 @@ class GaussNoise(VoxelOnlyTransform):
         self.per_channel = per_channel
 
     def apply(self, voxel, gauss, **params):
-        return F.addition(voxel, gauss)
+        return F.add(voxel, gauss)
 
     @property
     def targets_as_params(self):
@@ -436,7 +436,7 @@ class IntensityShift(VoxelOnlyTransform):
         self.per_channel = per_channel
 
     def apply(self, voxel, shift, **params):
-        return F.addition(voxel, shift)
+        return F.add(voxel, shift)
 
     @property
     def targets_as_params(self):
@@ -455,6 +455,47 @@ class IntensityShift(VoxelOnlyTransform):
 
     def get_transform_init_args_names(self):
         return ('shift_limit', 'per_channel')
+
+class IntensityScale(VoxelOnlyTransform):
+    """Scale intensities of a voxel.
+    """
+    def __init__(
+            self,
+            scale_limit=10.,
+            per_channel=True,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                scale_limit: float
+                    limit of intensity scale
+                per_channel: bool
+                    if set to True, noise will be sampled for each channel independently
+        """
+        super(IntensityScale, self).__init__(always_apply, p)
+
+        self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
+        self.per_channel = per_channel
+
+    def apply(self, voxel, scale, **params):
+        return F.multiply(voxel, scale)
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        if self.per_channel and len(params['voxel'].shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
+            nchannel = params['voxel'].shape[C.CHANNEL_DIM]
+            scale = 1 + (2 * np.random.random(nchannel) - 1) * self.scale_limit
+        else:
+            scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
+
+        return {'scale': scale}
+
+    def get_transform_init_args_names(self):
+        return ('scale_limit', 'per_channel')
 
 class GridDistort(DualTransform):
     """Randomly distort a voxel by grid.
