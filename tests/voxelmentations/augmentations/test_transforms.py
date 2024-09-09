@@ -18,6 +18,7 @@ SHAPE_PRESERVED_TRANSFORMS = [
     V.GaussNoise,
     V.GaussBlur,
     V.IntensityShift,
+    V.IntensityScale,
     V.GridDistort,
     # V.ElasticDistort,
     V.Gamma,
