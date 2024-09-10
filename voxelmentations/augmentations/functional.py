@@ -74,8 +74,8 @@ def add(voxel, other):
 
     return voxel + other
 
-def multiply(voxel, coef):
-    return coef * voxel
+def multiply(voxel, factor):
+    return factor * voxel
 
 def conv(voxel, kernel, border_mode, fill_value):
     if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
@@ -109,7 +109,13 @@ def distort(voxel, distorted_grid, interpolation):
 
     return voxel
 
-def gamma_transform(voxel, gamma):
+def contrast(voxel, contrast):
+    mean = np.mean(voxel)
+    voxel = (voxel - mean) * contrast + mean
+
+    return voxel
+
+def gamma(voxel, gamma):
     values = np.abs(voxel)
     signs = np.sign(voxel)
 

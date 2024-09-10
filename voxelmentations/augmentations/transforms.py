@@ -257,37 +257,6 @@ class AxialPlaneAffine(DualTransform):
     def get_transform_init_args_names(self):
         return ( 'scale_limit', 'shift_limit', 'angle_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
 
-class AxialPlaneRotate(AxialPlaneAffine):
-    """Randomly rotate axial planes of a voxel.
-    """
-    def __init__(
-            self,
-            angle_limit=10,
-            border_mode=E.BorderType.DEFAULT,
-            interpolation=E.InterType.DEFAULT,
-            fill_value=0,
-            mask_fill_value=0,
-            always_apply=False,
-            p=0.5,
-        ):
-        """
-            :args:
-                angle_limit: float
-                    limit of rotation in degrees [0, 180]
-                border_mode: BorderType
-                    border mode
-                interpolation: InterType
-                    interpolation mode
-                fill_value: float
-                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
-                mask_fill_value: int or None
-                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
-        """
-        super(AxialPlaneRotate, self).__init__(0, 0, angle_limit, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
-
-    def get_transform_init_args_names(self):
-        return ('angle_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
-
 class AxialPlaneScale(AxialPlaneAffine):
     """Randomly scale axial planes of a voxel.
     """
@@ -318,6 +287,68 @@ class AxialPlaneScale(AxialPlaneAffine):
 
     def get_transform_init_args_names(self):
         return ('scale_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
+
+class AxialPlaneTranslate(AxialPlaneAffine):
+    """Randomly translate axial planes of a voxel.
+    """
+    def __init__(
+            self,
+            shift_limit=0.05,
+            border_mode=E.BorderType.DEFAULT,
+            interpolation=E.InterType.DEFAULT,
+            fill_value=0,
+            mask_fill_value=0,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                shift_limit: float
+                    limit of translation as ratio of size
+                border_mode: BorderType
+                    border mode
+                interpolation: InterType
+                    interpolation mode
+                fill_value: float
+                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
+                mask_fill_value: int or None
+                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
+        """
+        super(AxialPlaneTranslate, self).__init__(0, shift_limit, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+
+    def get_transform_init_args_names(self):
+        return ('shift_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
+
+class AxialPlaneRotate(AxialPlaneAffine):
+    """Randomly rotate axial planes of a voxel.
+    """
+    def __init__(
+            self,
+            angle_limit=10,
+            border_mode=E.BorderType.DEFAULT,
+            interpolation=E.InterType.DEFAULT,
+            fill_value=0,
+            mask_fill_value=0,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                angle_limit: float
+                    limit of rotation in degrees [0, 180]
+                border_mode: BorderType
+                    border mode
+                interpolation: InterType
+                    interpolation mode
+                fill_value: float
+                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
+                mask_fill_value: int or None
+                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
+        """
+        super(AxialPlaneRotate, self).__init__(0, 0, angle_limit, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+
+    def get_transform_init_args_names(self):
+        return ('angle_limit', 'border_mode', 'interpolation', 'fill_value', 'mask_fill_value')
 
 class GaussNoise(VoxelOnlyTransform):
     """Randomly add gaussian noise to a voxel.
@@ -419,42 +450,33 @@ class IntensityShift(VoxelOnlyTransform):
     def __init__(
             self,
             shift_limit=10.,
-            per_channel=True,
             always_apply=False,
             p=0.5,
         ):
         """
+            :NOTE:
+                The augmentation is often referred to as additive brightness in other libraries.
+
             :args:
                 shift_limit: float
                     limit of intensity shift
-                per_channel: bool
-                    if set to True, noise will be sampled for each channel independently
         """
         super(IntensityShift, self).__init__(always_apply, p)
 
         self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
-        self.per_channel = per_channel
 
     def apply(self, voxel, shift, **params):
         return F.add(voxel, shift)
 
-    @property
-    def targets_as_params(self):
-        return ['voxel']
-
-    def get_params_dependent_on_targets(self, params):
-        if self.per_channel and len(params['voxel'].shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
-            nchannel = params['voxel'].shape[C.CHANNEL_DIM]
-            shift = (2 * np.random.random(nchannel) - 1) * self.shift_limit
-        else:
-            shift = (2 * np.random.random() - 1) * self.shift_limit
+    def get_params(self):
+        shift = (2 * np.random.random() - 1) * self.shift_limit
 
         shift = np.expand_dims(shift, [C.VERTICAL_DIM, C.HORIZONTAL_DIM, C.AXIAL_DIM])
 
         return {'shift': shift}
 
     def get_transform_init_args_names(self):
-        return ('shift_limit', 'per_channel')
+        return ('shift_limit', )
 
 class IntensityScale(VoxelOnlyTransform):
     """Scale intensities of a voxel.
@@ -462,21 +484,20 @@ class IntensityScale(VoxelOnlyTransform):
     def __init__(
             self,
             scale_limit=10.,
-            per_channel=True,
             always_apply=False,
             p=0.5,
         ):
         """
+            :NOTE:
+                The augmentation is often referred to as multiplicative brightness in other libraries.
+
             :args:
                 scale_limit: float
                     limit of intensity scale
-                per_channel: bool
-                    if set to True, noise will be sampled for each channel independently
         """
         super(IntensityScale, self).__init__(always_apply, p)
 
         self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
-        self.per_channel = per_channel
 
     def apply(self, voxel, scale, **params):
         return F.multiply(voxel, scale)
@@ -486,16 +507,80 @@ class IntensityScale(VoxelOnlyTransform):
         return ['voxel']
 
     def get_params_dependent_on_targets(self, params):
-        if self.per_channel and len(params['voxel'].shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
-            nchannel = params['voxel'].shape[C.CHANNEL_DIM]
-            scale = 1 + (2 * np.random.random(nchannel) - 1) * self.scale_limit
-        else:
-            scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
+        scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
 
         return {'scale': scale}
 
     def get_transform_init_args_names(self):
-        return ('scale_limit', 'per_channel')
+        return ('scale_limit', )
+
+class Contrast(VoxelOnlyTransform):
+    """Change contrast of voxel.
+    """
+    def __init__(
+            self,
+            contrast_limit=0.1,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :NOTE:
+                The definition of contrasting was taken from https://arxiv.org/pdf/1902.05396
+
+            :args:
+                contrast_limit: float
+                    limit of contrasting
+        """
+        super(Contrast, self).__init__(always_apply, p)
+
+        self.contrast_limit = M.prepare_non_negative_float(contrast_limit, 'contrast_limit')
+
+    def apply(self, voxel, contrast, **params):
+        return F.contrast(voxel, contrast)
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        contrast = 1 + (2 * np.random.random() - 1) * self.contrast_limit
+
+        return {'contrast': contrast}
+
+    def get_transform_init_args_names(self):
+        return ('contrast_limit', )
+
+class Gamma(VoxelOnlyTransform):
+    """Apply gamma transform to intensities of a voxel.
+    """
+    def __init__(
+            self,
+            gamma_range=(0.8, 1.2),
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                gamma_range: (float, float)
+                    limit of intensity shift
+        """
+        super(Gamma, self).__init__(always_apply, p)
+
+        self.gamma_range = M.prepare_float_asymrange(gamma_range, 'gamma_range', 0.)
+
+        self.min_gamma = gamma_range[0]
+        self.max_gamma = gamma_range[1]
+
+    def apply(self, voxel, gamma, **params):
+        return F.gamma(voxel, gamma)
+
+    def get_params(self):
+        gamma = np.random.uniform(self.min_gamma, self.max_gamma)
+
+        return {'gamma': gamma}
+
+    def get_transform_init_args_names(self):
+        return ('gamma_range', )
 
 class GridDistort(DualTransform):
     """Randomly distort a voxel by grid.
@@ -611,38 +696,6 @@ class ElasticDistort(DualTransform):
 
     def get_transform_init_args_names(self):
         return ('distort_limit', 'sigma', 'interpolation')
-
-class Gamma(VoxelOnlyTransform):
-    """Apply gamma transform to intensities of a voxel.
-    """
-    def __init__(
-            self,
-            gamma_range=(0.8, 1.2),
-            always_apply=False,
-            p=0.5,
-        ):
-        """
-            :args:
-                gamma_range: (float, float)
-                    limit of intensity shift
-        """
-        super(Gamma, self).__init__(always_apply, p)
-
-        self.gamma_range = M.prepare_float_asymrange(gamma_range, 'gamma_range', 0.)
-
-        self.min_gamma = gamma_range[0]
-        self.max_gamma = gamma_range[1]
-
-    def apply(self, voxel, gamma, **params):
-        return F.gamma_transform(voxel, gamma)
-
-    def get_params(self):
-        gamma = np.random.uniform(self.min_gamma, self.max_gamma)
-
-        return {'gamma': gamma}
-
-    def get_transform_init_args_names(self):
-        return ('gamma_range', )
 
 class PlaneDropout(VoxelOnlyTransform):
     """Randomly drop out planes of a voxel along a dim.
