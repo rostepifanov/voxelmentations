@@ -35,6 +35,20 @@ class Compose(Apply):
     def __getitem__(self, idx):
         return self.transforms[idx]
 
+    def add_targets(self, additional_targets):
+        """Add targets to transform them the same way as one of existing targets.
+
+            :NOTE:
+                for example: additional_targets = {'voxel2': 'voxel'}
+                adds new target voxel2 that transformed the same way as voxel
+
+            :args:
+                additional_targets: dict
+                    keys - additional target name, values - existed target name.
+        """
+        for transform in self.transforms:
+            transform.add_targets(additional_targets)
+
     def __repr__(self):
         return self.repr()
 
@@ -56,10 +70,6 @@ class Compose(Apply):
         repr_string += '\n' + ' ' * (indent - self.REPR_INDENT_STEP) + '], {args})'.format(args=format_args(args))
 
         return repr_string
-
-    @classmethod
-    def get_class_fullname(cls):
-        return get_shortest_class_fullname(cls)
 
 class Sequential(Compose):
     """Compose transforms to apply sequentially.

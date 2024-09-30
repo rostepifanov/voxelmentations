@@ -55,6 +55,38 @@ def test_Sequential_CASE_call_AND_double_flip():
     assert np.allclose(output, input)
 
 @pytest.mark.core
+def test_Sequential_CASE_additional_targets():
+    input = np.random.randn(32, 32, 32, 1)
+
+    transform = V.Sequential([
+        V.AxialFlip(always_apply=True),
+    ], always_apply=True)
+
+    transform.add_targets({'voxel2': 'voxel'})
+
+    outputs = transform(voxel=input, voxel2=input)
+    output = outputs['voxel2']
+    expected = outputs['voxel']
+
+    assert np.allclose(output, expected)
+
+@pytest.mark.core
+def test_NonSequential_CASE_additional_targets():
+    input = np.random.randn(32, 32, 32, 1)
+
+    transform = V.NonSequential([
+        V.AxialFlip(always_apply=True),
+    ], always_apply=True)
+
+    transform.add_targets({'voxel2': 'voxel'})
+
+    outputs = transform(voxel=input, voxel2=input)
+    output = outputs['voxel2']
+    expected = outputs['voxel']
+
+    assert np.allclose(output, expected)
+
+@pytest.mark.core
 def test_OneOf_CASE_call_AND_no_transfroms():
     input = np.random.randn(32, 32, 32, 1)
 

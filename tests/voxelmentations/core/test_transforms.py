@@ -36,7 +36,6 @@ def test_Transform_CASE_additional_targets():
 
     assert np.allclose(output, expected)
 
-
 @pytest.mark.core
 def test_Transform_CASE_additional_targets_CASE_key_rewrite():
     input = np.random.randn(32, 32, 32, 1)
