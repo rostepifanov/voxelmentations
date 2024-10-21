@@ -1,7 +1,7 @@
 import numpy as np
 
 from voxelmentations.core.application import Apply
-from voxelmentations.core.utils import format_args, get_shortest_class_fullname
+from voxelmentations.core.utils import format_args
 
 class Compose(Apply):
     def __init__(self, transforms, always_apply, p):

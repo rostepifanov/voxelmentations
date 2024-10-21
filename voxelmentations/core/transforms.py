@@ -1,5 +1,3 @@
-import voxelmentations.core.enum as E
-
 from voxelmentations.core.application import Apply
 from voxelmentations.core.utils import format_args
 

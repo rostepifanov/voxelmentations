@@ -124,7 +124,6 @@ class PadIfNeeded(DualTransform):
     def apply_to_mask(self, mask, pads, **params):
         return F.pad(mask, pads, self.border_mode, self.mask_fill_value)
 
-
 class Flip(DualTransform):
     """Flip a voxel along a dim.
     """
