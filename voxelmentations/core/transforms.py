@@ -99,7 +99,7 @@ class Transform(Apply):
                     f'Trying to overwrite existed target. '
                     f'Key={additional_key} exists in {existed_keys}',
                 )
-            else:
+            elif existed_key in self._targets:
                 _targets[additional_key] = self._targets[existed_key]
 
         self._targets.update(_targets)
