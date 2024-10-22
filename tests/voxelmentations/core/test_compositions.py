@@ -87,6 +87,41 @@ def test_NonSequential_CASE_additional_targets():
     assert np.allclose(output, expected)
 
 @pytest.mark.core
+def test_Compose_CASE_additional_targets_AND_hierarchy():
+    input = np.random.randn(32, 32, 32, 1)
+
+    transform = V.Sequential([
+        V.OneOf([
+            V.AxialFlip(always_apply=True),
+        ], always_apply=True)
+    ], always_apply=True)
+
+    transform.add_targets({'voxel2': 'voxel'})
+
+    outputs = transform(voxel=input, voxel2=input)
+    output = outputs['voxel2']
+    expected = outputs['voxel']
+
+    assert np.allclose(output, expected)
+
+@pytest.mark.core
+def test_Compose_CASE_additional_targets_AND_notarget():
+    voxel = np.random.randn(32, 32, 32, 2)
+    mask = np.ones((32, 32, 32, 1))
+
+    transform = V.NonSequential([
+        V.AxialFlip(always_apply=True),
+        V.GaussNoise(always_apply=True)
+    ], always_apply=True)
+
+    transform.add_targets({'mask2': 'mask'})
+    transformed = transform(voxel=voxel, mask=mask, mask2=mask)
+
+    tmask, tmask2 = transformed['mask'], transformed['mask2']
+
+    assert np.allclose(tmask, tmask2)
+
+@pytest.mark.core
 def test_OneOf_CASE_call_AND_no_transfroms():
     input = np.random.randn(32, 32, 32, 1)
 
