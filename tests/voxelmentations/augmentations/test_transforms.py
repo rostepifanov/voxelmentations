@@ -30,6 +30,7 @@ SHAPE_PRESERVED_TRANSFORMS = [
     V.AxialPlaneDropout,
     V.PatchDropout,
     V.PatchShuffle,
+    V.Downscale,
 ]
 
 SHAPE_UNPRESERVED_TRANSFORMS = [

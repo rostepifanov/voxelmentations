@@ -958,3 +958,41 @@ class PatchShuffle(VoxelOnlyTransform):
 
     def apply(self, voxel, patches, **params):
         return F.patch_shuffle(voxel, patches)
+
+class Downscale(VoxelOnlyTransform):
+    """Randomly reduce the resolution of voxel.
+    """
+    def __init__(
+            self,
+            scale_limit=0.25,
+            interpolation=E.InterType.NEAREST,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                scale_limit: float
+                    limit of resolution scale
+                interpolation: InterType
+                    interpolation mode for downscale
+        """
+        super(Downscale, self).__init__(always_apply, p)
+
+        self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
+
+        self.down_interpolation = interpolation
+        self.up_interpolation = E.InterType.LINEAR
+
+    def get_transform_init_args_names(self):
+        return (
+            'scale_limit',
+            'down_interpolation',
+        )
+
+    def get_params(self):
+        scale = 1 + (np.random.random() - 1) * self.scale_limit
+
+        return {'scale': scale}
+
+    def apply(self, voxel, scale, **params):
+        return F.downscale(voxel, scale, self.down_interpolation, self.up_interpolation)

@@ -314,3 +314,57 @@ def test_distort_CASE_identity():
     output = F.distort(input, grid, E.InterType.LINEAR)
 
     assert np.allclose(output, expected)
+
+def test_reshape_CASE_twice_reshape():
+    shape = (2, 2, 1)
+    nshape = (4, 4, 1)
+
+    input = np.expand_dims(
+        np.array([
+            [ 1, 3],
+            [ 5, 7],
+        ]),
+        axis=(2, 3)
+    )
+
+    expected1 = np.expand_dims(
+        np.array([
+            [ 1, 1, 3, 3],
+            [ 1, 1, 3, 3],
+            [ 5, 5, 7, 7],
+            [ 5, 5, 7, 7],
+        ]),
+        axis=(2, 3)
+    )
+
+    expected2 = np.copy(input)
+
+    output = F.reshape(input, nshape, E.InterType.NEAREST)
+    assert np.allclose(output, expected1)
+
+    output = F.reshape(output, shape, E.InterType.NEAREST)
+    assert np.allclose(output, expected2)
+
+def test_resсale_CASE_upsсale():
+    scale = (2, 2, 2)
+
+    input = np.expand_dims(
+        np.array([
+            [ 1, 3],
+            [ 5, 7],
+        ]),
+        axis=(2, 3)
+    )
+
+    expected = np.expand_dims(
+        np.array([
+            [ 1, 1, 3, 3],
+            [ 1, 1, 3, 3],
+            [ 5, 5, 7, 7],
+            [ 5, 5, 7, 7],
+        ]),
+        axis=(2, 3)
+    )
+
+    output = F.rescale(input, scale, E.InterType.NEAREST)
+    assert np.allclose(output, expected)

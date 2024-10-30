@@ -149,3 +149,54 @@ def patch_shuffle(voxel, patches):
         voxel[patch] = pixels
 
     return voxel
+
+def rescale(voxel, scale, interpolation):
+    voxel = apply_along_dim(
+        voxel,
+        lambda arr: sc.ndimage.zoom(
+            arr,
+            scale,
+            order=C.MAP_INTER_TO_SC[interpolation],
+            mode='grid-constant',
+            grid_mode=True,
+        ),
+        dim=-1,
+    )
+
+    return voxel
+
+@D.preserve_channel_dim
+def reshape(voxel, shape, interpolation):
+    voxel = apply_along_dim(
+        voxel,
+        lambda arr: cv2.resize(
+            arr,
+            (shape[1], shape[0]),
+            fx=None,
+            fy=None,
+            interpolation=C.MAP_INTER_TO_CV2[interpolation],
+        ),
+        dim=2,
+    )
+
+    voxel = apply_along_dim(
+        voxel,
+        lambda arr: cv2.resize(
+            arr,
+            (shape[2], voxel.shape[1]),
+            fx=None,
+            fy=None,
+            interpolation=C.MAP_INTER_TO_CV2[interpolation],
+        ),
+        dim=0,
+    )
+
+    return voxel
+
+def downscale(voxel, scale, down_interpolation, up_interpolation):
+    shape = voxel.shape[:C.NUM_SPATIAL_DIMENSIONS]
+
+    voxel = rescale(voxel, scale, down_interpolation)
+    voxel = reshape(voxel, shape, up_interpolation)
+
+    return voxel
