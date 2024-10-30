@@ -1,8 +1,8 @@
 # Voxelmentations
 
 ![Python version support](https://img.shields.io/pypi/pyversions/voxelmentations)
-[![PyPI version](https://badge.fury.io/py/exgment.svg)](https://badge.fury.io/py/voxelmentations)
-[![Downloads](https://pepy.tech/badge/exgment/month)](https://pepy.tech/project/voxelmentations?versions=0.0.*)
+[![PyPI version](https://badge.fury.io/py/voxelmentations.svg)](https://badge.fury.io/py/voxelmentations)
+[![Downloads](https://pepy.tech/badge/voxelmentations/month)](https://pepy.tech/project/voxelmentations?versions=0.0.*)
 
 Voxelmentations is a Python library for 3d image (voxel) augmentation. Voxel augmentation is used in deep learning to increase the quality of trained models. The purpose of voxel augmentation is to create new training samples from the existing data.
 
