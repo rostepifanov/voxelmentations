@@ -42,6 +42,14 @@ MASK_FILL_VALUE_TRANSFORMS = {
     V.AxialPlaneAffine: {'angle': 5., 'shift': 0., 'scale': 0.95},
 }
 
+@pytest.fixture(scope='function', autouse=True)
+def seed():
+    np.random.seed(1996)
+
+@pytest.fixture(scope='function', autouse=True)
+def random(monkeypatch):
+    monkeypatch.setattr(np.random, 'random', lambda size=None: 0.25)
+
 @pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS + SHAPE_UNPRESERVED_TRANSFORMS)
 def test_Transform_CASE_repr(transform):
     instance = transform(always_apply=True)
