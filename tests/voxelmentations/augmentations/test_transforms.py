@@ -64,8 +64,11 @@ def test_Transform_CASE_call_AND_multi_channel(transform):
     voxel = np.random.randn(32, 32, 32, 2)
     mask = np.ones((32, 32, 32, 1))
 
+    tvoxel = np.copy(voxel)
+    tmask = np.copy(mask)
+
     instance = transform(always_apply=True)
-    transformed = instance(voxel=voxel, mask=mask)
+    transformed = instance(voxel=tvoxel, mask=tmask)
 
     tvoxel, tmask = transformed['voxel'], transformed['mask']
 

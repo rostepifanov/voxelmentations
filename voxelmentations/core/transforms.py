@@ -143,16 +143,33 @@ class VoxelOnlyTransform(Transform):
         return {'voxel': self.apply}
 
 class DualTransform(Transform):
-    """Transform for segmentation task
+    """Transform applied to voxel and segmentation mask
     """
     def apply_to_mask(self, mask, **params):
         return self.apply(mask, **params)
 
     @property
     def targets(self):
-        return {'voxel': self.apply, 'mask': self.apply_to_mask}
+        return {
+            'voxel': self.apply,
+            'mask': self.apply_to_mask,
+        }
 
-class Identity(DualTransform):
+class TripleTransform(Transform):
+    """Transform applied to voxel, segmentation mask and key points
+    """
+    def apply_to_mask(self, mask, **params):
+        return self.apply(mask, **params)
+
+    @property
+    def targets(self):
+        return {
+            'voxel': self.apply,
+            'mask': self.apply_to_mask,
+            'points': self.apply_to_points,
+        }
+
+class Identity(TripleTransform):
     """Identity transform
     """
     def get_transform_init_args_names(self):
@@ -160,3 +177,6 @@ class Identity(DualTransform):
 
     def apply(self, voxel, **params):
         return voxel
+
+    def apply_to_points(self, points, **params):
+        return points
