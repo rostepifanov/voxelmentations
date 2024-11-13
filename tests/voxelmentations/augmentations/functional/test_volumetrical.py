@@ -5,7 +5,7 @@ import numpy as np
 
 import voxelmentations.core.enum as E
 import voxelmentations.core.constants as C
-import voxelmentations.augmentations.functional as F
+import voxelmentations.augmentations.functional.volumetrical as FV
 
 def test_plane_dropout_CASE_zero_dim():
     input = np.expand_dims(
@@ -22,7 +22,7 @@ def test_plane_dropout_CASE_zero_dim():
     fill_value = 0
     dim = C.VERTICAL_DIM
 
-    output = F.plane_dropout(input, indices, fill_value, dim)
+    output = FV.plane_dropout(input, indices, fill_value, dim)
 
     assert np.allclose(output, expected)
 
@@ -41,7 +41,7 @@ def test_pad_CASE_left_AND_constant_border():
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
 
-    output = F.pad(input, pads, border_mode, fill_value)
+    output = FV.pad(input, pads, border_mode, fill_value)
 
     assert np.allclose(output, expected)
 
@@ -60,7 +60,7 @@ def test_pad_CASE_left_AND_constant_border_AND_mono_channel():
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
 
-    output = F.pad(input, pads, border_mode, fill_value)
+    output = FV.pad(input, pads, border_mode, fill_value)
 
     assert np.allclose(output, expected)
 
@@ -79,7 +79,7 @@ def test_pad_CASE_left_AND_replicate_border():
     border_mode = E.BorderType.REPLICATE
     fill_value = None
 
-    output = F.pad(input, pads, border_mode, fill_value)
+    output = FV.pad(input, pads, border_mode, fill_value)
 
     assert np.allclose(output, expected)
 
@@ -112,7 +112,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
     fill_value = 0
     dim = C.AXIAL_DIM
 
-    output = F.plane_affine(
+    output = FV.plane_affine(
         input,
         scale,
         shift,
@@ -154,7 +154,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
     fill_value = 0
     dim = C.AXIAL_DIM
 
-    output = F.plane_affine(
+    output = FV.plane_affine(
         input,
         scale,
         shift,
@@ -196,7 +196,7 @@ def test_plane_scale_CASE_twice_isotropic_upscaling():
     fill_value = 0
     dim = C.AXIAL_DIM
 
-    output = F.plane_affine(
+    output = FV.plane_affine(
         input,
         scale,
         shift,
@@ -238,7 +238,7 @@ def test_plane_affine_CASE_only_shift():
     fill_value = 0
     dim = C.AXIAL_DIM
 
-    output = F.plane_affine(
+    output = FV.plane_affine(
         input,
         scale,
         shift,
@@ -280,7 +280,7 @@ def test_plane_affine_CASE_rotation_AND_shift():
     fill_value = 0
     dim = C.AXIAL_DIM
 
-    output = F.plane_affine(
+    output = FV.plane_affine(
         input,
         scale,
         shift,
@@ -311,7 +311,7 @@ def test_distort_CASE_identity():
 
     grid = np.meshgrid(*points, indexing='ij')
 
-    output = F.distort(input, grid, E.InterType.LINEAR)
+    output = FV.distort(input, grid, E.InterType.LINEAR)
 
     assert np.allclose(output, expected)
 
@@ -339,10 +339,10 @@ def test_reshape_CASE_twice_reshape():
 
     expected2 = np.copy(input)
 
-    output = F.reshape(input, nshape, E.InterType.NEAREST)
+    output = FV.reshape(input, nshape, E.InterType.NEAREST)
     assert np.allclose(output, expected1)
 
-    output = F.reshape(output, shape, E.InterType.NEAREST)
+    output = FV.reshape(output, shape, E.InterType.NEAREST)
     assert np.allclose(output, expected2)
 
 def test_resсale_CASE_upsсale():
@@ -366,5 +366,5 @@ def test_resсale_CASE_upsсale():
         axis=(2, 3)
     )
 
-    output = F.rescale(input, scale, E.InterType.NEAREST)
+    output = FV.rescale(input, scale, E.InterType.NEAREST)
     assert np.allclose(output, expected)

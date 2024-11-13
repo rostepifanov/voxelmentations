@@ -3,9 +3,9 @@ import numpy as np
 import voxelmentations.core.enum as E
 import voxelmentations.core.constants as C
 import voxelmentations.augmentations.checkers as M
-import voxelmentations.augmentations.functional as F
 
-from voxelmentations.core.transforms import VoxelOnlyTransform, DualTransform
+from voxelmentations.augmentations.functional import FV, FG
+from voxelmentations.core.transforms import VoxelOnlyTransform, DualTransform, TripleTransform
 
 class PadIfNeeded(DualTransform):
     """Pad shape of a voxel to a minimal shape.
@@ -119,10 +119,10 @@ class PadIfNeeded(DualTransform):
         return {'pads': pads}
 
     def apply(self, voxel, pads, **params):
-        return F.pad(voxel, pads, self.border_mode, self.fill_value)
+        return FV.pad(voxel, pads, self.border_mode, self.fill_value)
 
     def apply_to_mask(self, mask, pads, **params):
-        return F.pad(mask, pads, self.border_mode, self.mask_fill_value)
+        return FV.pad(mask, pads, self.border_mode, self.mask_fill_value)
 
 class Flip(DualTransform):
     """Flip a voxel along a dim.
@@ -146,7 +146,7 @@ class Flip(DualTransform):
         return {'dims': dims}
 
     def apply(self, voxel, dims, **params):
-        return F.flip(voxel, dims)
+        return FV.flip(voxel, dims)
 
 class AxialFlip(Flip):
     """Flip a voxel in z dim.
@@ -175,7 +175,7 @@ class Rotate90(DualTransform):
         return {'dims': dims, 'times': times}
 
     def apply(self, voxel, dims, times, **params):
-        return F.rot90(voxel, dims, times)
+        return FV.rot90(voxel, dims, times)
 
 class AxialPlaneRotate90(Rotate90):
     """Rotate on 90 degrees by x times a voxel in x-y plane.
@@ -197,7 +197,7 @@ class Tranpose(DualTransform):
         return {'dims': dims}
 
     def apply(self, voxel, dims, **params):
-        return F.transpose(voxel, dims)
+        return FV.transpose(voxel, dims)
 
 class AxialPlaneTranpose(Tranpose):
     """Transpose a voxel in x-y plane.
@@ -268,10 +268,10 @@ class AxialPlaneAffine(DualTransform):
         return {'scale': scale, 'shift': shift, 'angle': angle}
 
     def apply(self, voxel, scale, shift, angle, **params):
-        return F.plane_affine(voxel, scale, shift, angle, self.interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+        return FV.plane_affine(voxel, scale, shift, angle, self.interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
 
     def apply_to_mask(self, mask, scale, shift, angle, **params):
-        return F.plane_affine(mask, scale, shift, angle, self.mask_interpolation, self.border_mode, self.mask_fill_value, C.AXIAL_DIM)
+        return FV.plane_affine(mask, scale, shift, angle, self.mask_interpolation, self.border_mode, self.mask_fill_value, C.AXIAL_DIM)
 
 class AxialPlaneScale(AxialPlaneAffine):
     """Randomly scale axial planes of a voxel.
@@ -428,7 +428,7 @@ class GaussNoise(VoxelOnlyTransform):
         return {'gauss': gauss}
 
     def apply(self, voxel, gauss, **params):
-        return F.add(voxel, gauss)
+        return FV.add(voxel, gauss)
 
 class GaussBlur(VoxelOnlyTransform):
     """Blur by gaussian a voxel.
@@ -476,7 +476,7 @@ class GaussBlur(VoxelOnlyTransform):
         return {'kernel': kernel}
 
     def apply(self, voxel, kernel, **params):
-        return F.conv(voxel, kernel, E.BorderType.CONSTANT, 0)
+        return FV.conv(voxel, kernel, E.BorderType.CONSTANT, 0)
 
 class IntensityShift(VoxelOnlyTransform):
     """Shift intensities of a voxel.
@@ -510,7 +510,7 @@ class IntensityShift(VoxelOnlyTransform):
         return {'shift': shift}
 
     def apply(self, voxel, shift, **params):
-        return F.add(voxel, shift)
+        return FV.add(voxel, shift)
 
 class IntensityScale(VoxelOnlyTransform):
     """Scale intensities of a voxel.
@@ -546,7 +546,7 @@ class IntensityScale(VoxelOnlyTransform):
         return {'scale': scale}
 
     def apply(self, voxel, scale, **params):
-        return F.multiply(voxel, scale)
+        return FV.multiply(voxel, scale)
 
 class Contrast(VoxelOnlyTransform):
     """Change contrast of voxel.
@@ -582,7 +582,7 @@ class Contrast(VoxelOnlyTransform):
         return {'contrast': contrast}
 
     def apply(self, voxel, contrast, **params):
-        return F.contrast(voxel, contrast)
+        return FV.contrast(voxel, contrast)
 
 class Gamma(VoxelOnlyTransform):
     """Apply gamma transform to intensities of a voxel.
@@ -614,7 +614,7 @@ class Gamma(VoxelOnlyTransform):
         return {'gamma': gamma}
 
     def apply(self, voxel, gamma, **params):
-        return F.gamma(voxel, gamma)
+        return FV.gamma(voxel, gamma)
 
 class GridDistort(DualTransform):
     """Randomly distort a voxel by grid.
@@ -674,10 +674,10 @@ class GridDistort(DualTransform):
         return {'distorted_grid': distorted_grid}
 
     def apply(self, voxel, distorted_grid, **params):
-        return F.distort(voxel, distorted_grid, self.interpolation)
+        return FV.distort(voxel, distorted_grid, self.interpolation)
 
     def apply_to_mask(self, mask, distorted_grid, **params):
-        return F.distort(mask, distorted_grid, self.mask_interpolation)
+        return FV.distort(mask, distorted_grid, self.mask_interpolation)
 
 class ElasticDistort(DualTransform):
     """Randomly elastic distort a voxel.
@@ -726,10 +726,10 @@ class ElasticDistort(DualTransform):
         return {'distorted_grid': distorted_grid}
 
     def apply(self, voxel, distorted_grid, **params):
-        return F.distort(voxel, distorted_grid, self.interpolation)
+        return FV.distort(voxel, distorted_grid, self.interpolation)
 
     def apply_to_mask(self, mask, distorted_grid, **params):
-        return F.distort(mask, distorted_grid, self.mask_interpolation)
+        return FV.distort(mask, distorted_grid, self.mask_interpolation)
 
 class PlaneDropout(VoxelOnlyTransform):
     """Randomly drop out planes of a voxel along a dim.
@@ -772,7 +772,7 @@ class PlaneDropout(VoxelOnlyTransform):
         return {'indices': indices, 'dim': dim}
 
     def apply(self, voxel, indices, dim, **params):
-        return F.plane_dropout(voxel, indices, self.fill_value, dim)
+        return FV.plane_dropout(voxel, indices, self.fill_value, dim)
 
 class HorizontalPlaneDropout(PlaneDropout):
     """Randomly drop out horizontal planes of a voxel.
@@ -875,7 +875,7 @@ class PatchDropout(VoxelOnlyTransform):
         return {'patches': patches}
 
     def apply(self, voxel, patches, **params):
-        return F.patch_dropout(voxel, patches, self.fill_value)
+        return FV.patch_dropout(voxel, patches, self.fill_value)
 
 class PatchShuffle(VoxelOnlyTransform):
     """Randomly shuffle pixels in patches of a voxel.
@@ -957,7 +957,7 @@ class PatchShuffle(VoxelOnlyTransform):
         return {'patches': patches}
 
     def apply(self, voxel, patches, **params):
-        return F.patch_shuffle(voxel, patches)
+        return FV.patch_shuffle(voxel, patches)
 
 class Downscale(VoxelOnlyTransform):
     """Randomly reduce the resolution of voxel.
@@ -995,4 +995,4 @@ class Downscale(VoxelOnlyTransform):
         return {'scale': scale}
 
     def apply(self, voxel, scale, **params):
-        return F.downscale(voxel, scale, self.down_interpolation, self.up_interpolation)
+        return FV.downscale(voxel, scale, self.down_interpolation, self.up_interpolation)
