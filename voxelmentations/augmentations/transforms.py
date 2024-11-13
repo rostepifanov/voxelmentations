@@ -182,7 +182,7 @@ class AxialPlaneRotate90(Rotate90):
     """
     _DIMS = (C.AXIAL_DIM, )
 
-class Tranpose(DualTransform):
+class Tranpose(TripleTransform):
     """Transpose a voxel on orthogonal plane to a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
@@ -198,6 +198,9 @@ class Tranpose(DualTransform):
 
     def apply(self, voxel, dims, **params):
         return FV.transpose(voxel, dims)
+
+    def apply_to_points(self, points, dims, **params):
+        return FG.transpose(points, dims)
 
 class AxialPlaneTranpose(Tranpose):
     """Transpose a voxel in x-y plane.

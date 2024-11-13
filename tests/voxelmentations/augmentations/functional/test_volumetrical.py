@@ -1,12 +1,12 @@
 import pytest
 
-import cv2
 import numpy as np
 
 import voxelmentations.core.enum as E
 import voxelmentations.core.constants as C
 import voxelmentations.augmentations.functional.volumetrical as FV
 
+@pytest.mark.functional
 def test_plane_dropout_CASE_zero_dim():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
@@ -26,6 +26,7 @@ def test_plane_dropout_CASE_zero_dim():
 
     assert np.allclose(output, expected)
 
+@pytest.mark.functional
 def test_pad_CASE_left_AND_constant_border():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
@@ -45,6 +46,7 @@ def test_pad_CASE_left_AND_constant_border():
 
     assert np.allclose(output, expected)
 
+@pytest.mark.functional
 def test_pad_CASE_left_AND_constant_border_AND_mono_channel():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
@@ -64,6 +66,7 @@ def test_pad_CASE_left_AND_constant_border_AND_mono_channel():
 
     assert np.allclose(output, expected)
 
+@pytest.mark.functional
 def test_pad_CASE_left_AND_replicate_border():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
@@ -83,6 +86,7 @@ def test_pad_CASE_left_AND_replicate_border():
 
     assert np.allclose(output, expected)
 
+@pytest.mark.functional
 def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
     input = np.expand_dims(
         np.array([
@@ -125,6 +129,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
 
     assert np.allclose(output, expected)
 
+@pytest.mark.functional
 def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
     input = np.expand_dims(
         np.array([
@@ -167,6 +172,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
 
     assert np.allclose(output, expected)
 
+@pytest.mark.functional
 def test_plane_scale_CASE_twice_isotropic_upscaling():
     input = np.expand_dims(
         np.array([
@@ -209,6 +215,7 @@ def test_plane_scale_CASE_twice_isotropic_upscaling():
 
     assert np.allclose(output, expected)
 
+@pytest.mark.functional
 def test_plane_affine_CASE_only_shift():
     input = np.expand_dims(
         np.array([
@@ -251,6 +258,7 @@ def test_plane_affine_CASE_only_shift():
 
     assert np.allclose(output, expected)
 
+@pytest.mark.functional
 def test_plane_affine_CASE_rotation_AND_shift():
     input = np.expand_dims(
         np.array([
@@ -293,6 +301,7 @@ def test_plane_affine_CASE_rotation_AND_shift():
 
     assert np.allclose(output, expected)
 
+@pytest.mark.functional
 def test_distort_CASE_identity():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
@@ -315,6 +324,7 @@ def test_distort_CASE_identity():
 
     assert np.allclose(output, expected)
 
+@pytest.mark.functional
 def test_reshape_CASE_twice_reshape():
     shape = (2, 2, 1)
     nshape = (4, 4, 1)
@@ -345,6 +355,7 @@ def test_reshape_CASE_twice_reshape():
     output = FV.reshape(output, shape, E.InterType.NEAREST)
     assert np.allclose(output, expected2)
 
+@pytest.mark.functional
 def test_resсale_CASE_upsсale():
     scale = (2, 2, 2)
 

@@ -60,17 +60,19 @@ def test_Transform_CASE_repr(transform):
     assert 'p' in repr
 
 @pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS)
-def test_Transform_CASE_call_AND_multi_channel(transform):
-    voxel = np.random.randn(32, 32, 32, 2)
-    mask = np.ones((32, 32, 32, 1))
+def test_Transform_CASE_call_AND_mono_channel(transform):
+    voxel = np.random.randn(32, 32, 32)
+    mask = np.ones((32, 32, 32), dtype=np.uint8)
+    points = np.ones((24, C.NUM_COORDS), dtype=np.float32)
 
     tvoxel = np.copy(voxel)
     tmask = np.copy(mask)
+    tpoints = np.copy(points)
 
     instance = transform(always_apply=True)
-    transformed = instance(voxel=tvoxel, mask=tmask)
+    transformed = instance(voxel=voxel, mask=mask, points=points)
 
-    tvoxel, tmask = transformed['voxel'], transformed['mask']
+    tvoxel, tmask, tpoints = transformed['voxel'], transformed['mask'], transformed['points']
 
     assert tvoxel.shape == voxel.shape
     assert not np.allclose(tvoxel, voxel)
@@ -79,16 +81,26 @@ def test_Transform_CASE_call_AND_multi_channel(transform):
 
     if isinstance(transform, V.VoxelOnlyTransform):
         assert np.all(tmask == mask)
+
+    assert tpoints.shape == points.shape
+
+    if isinstance(transform, V.VoxelOnlyTransform):
+        assert np.allclose(tpoints, points)
 
 @pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS)
-def test_Transform_CASE_call_AND_mono_channel(transform):
-    voxel = np.random.randn(32, 32, 32)
-    mask = np.ones((32, 32, 32))
+def test_Transform_CASE_call_AND_multi_channel(transform):
+    voxel = np.random.randn(32, 32, 32, 2)
+    mask = np.ones((32, 32, 32, 1), dtype=np.uint8)
+    points = np.ones((24, C.NUM_COORDS), dtype=np.float32)
+
+    tvoxel = np.copy(voxel)
+    tmask = np.copy(mask)
+    tpoints = np.copy(points)
 
     instance = transform(always_apply=True)
-    transformed = instance(voxel=voxel, mask=mask)
+    transformed = instance(voxel=tvoxel, mask=tmask, points=tpoints)
 
-    tvoxel, tmask = transformed['voxel'], transformed['mask']
+    tvoxel, tmask, tpoints = transformed['voxel'], transformed['mask'], transformed['points']
 
     assert tvoxel.shape == voxel.shape
     assert not np.allclose(tvoxel, voxel)
@@ -97,6 +109,11 @@ def test_Transform_CASE_call_AND_mono_channel(transform):
 
     if isinstance(transform, V.VoxelOnlyTransform):
         assert np.all(tmask == mask)
+
+    assert tpoints.shape == points.shape
+
+    if isinstance(transform, V.VoxelOnlyTransform):
+        assert np.allclose(tpoints, points)
 
 @pytest.mark.parametrize('transform', MASK_FILL_VALUE_TRANSFORMS.keys())
 def test_Transform_CASE_mask_fill_value(transform, monkeypatch):
@@ -104,7 +121,7 @@ def test_Transform_CASE_mask_fill_value(transform, monkeypatch):
     monkeypatch.setattr(transform, 'get_params_dependent_on_targets', lambda self, params: MASK_FILL_VALUE_TRANSFORMS[transform])
 
     voxel = np.random.randn(32, 32, 32, 1)
-    mask = np.zeros((32, 32, 32, 1))
+    mask = np.zeros((32, 32, 32, 1), dtype=np.uint8)
 
     base_value = 0
     mask_fill_value = 10
