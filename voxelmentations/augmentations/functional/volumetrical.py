@@ -72,10 +72,10 @@ def add(voxel, other):
     if len(voxel.shape) > len(other.shape):
         other = np.expand_dims(other, axis=C.CHANNEL_DIM)
 
-    return voxel + other
+    return np.add(voxel, other)
 
 def multiply(voxel, factor):
-    return factor * voxel
+    return np.multiply(voxel, factor)
 
 def conv(voxel, kernel, border_mode, fill_value):
     if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
@@ -110,18 +110,29 @@ def distort(voxel, distorted_grid, interpolation):
     return voxel
 
 def contrast(voxel, contrast):
+    """
+        :NOTE:
+            mathematical notation:
+                voxel = (voxel - mean) * contrast + mean
+    """
     mean = np.mean(voxel)
-    voxel = (voxel - mean) * contrast + mean
 
-    return voxel
+    voxel = np.subtract(voxel, mean)
+    np.multiply(voxel, contrast, out=voxel)
+
+    return np.add(voxel, mean, out=voxel)
 
 def gamma(voxel, gamma):
+    """
+        :NOTE:
+            mathematical notation:
+                voxel = signs * voxel^gamma
+    """
     values = np.abs(voxel)
     signs = np.sign(voxel)
 
-    voxel = np.power(values, gamma) * signs
-
-    return voxel
+    voxel = np.power(values, gamma)
+    return np.multiply(signs, voxel, out=voxel)
 
 def plane_dropout(voxel, indices, value, dim):
     voxel = np.copy(voxel)

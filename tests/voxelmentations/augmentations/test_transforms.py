@@ -70,7 +70,7 @@ def test_Transform_CASE_call_AND_mono_channel(transform):
     tpoints = np.copy(points)
 
     instance = transform(always_apply=True)
-    transformed = instance(voxel=voxel, mask=mask, points=points)
+    transformed = instance(voxel=tvoxel, mask=tmask, points=tpoints)
 
     tvoxel, tmask, tpoints = transformed['voxel'], transformed['mask'], transformed['points']
 
