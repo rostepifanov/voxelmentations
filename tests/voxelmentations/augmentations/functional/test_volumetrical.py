@@ -325,6 +325,42 @@ def test_distort_CASE_identity():
     assert np.allclose(output, expected)
 
 @pytest.mark.functional
+def test_contrast_CASE_contrast():
+    contrast = 2
+
+    input = np.expand_dims(
+        np.array([0, -1, 1]),
+        axis=(1, 2, 3)
+    )
+
+    expected = np.expand_dims(
+        np.array([0, -2, 2]),
+        axis=(1, 2, 3)
+    )
+
+    output = FV.contrast(input, contrast)
+
+    assert np.allclose(output, expected)
+
+@pytest.mark.functional
+def test_gamma_CASE_gamma_square():
+    gamma = 2
+
+    input = np.expand_dims(
+        np.array([1, -2, 3, 4]),
+        axis=(1, 2, 3)
+    )
+
+    expected = np.expand_dims(
+        np.array([1, -4, 9, 16]),
+        axis=(1, 2, 3)
+    )
+
+    output = FV.gamma(input, gamma)
+
+    assert np.allclose(output, expected)
+
+@pytest.mark.functional
 def test_reshape_CASE_twice_reshape():
     shape = (2, 2, 1)
     nshape = (4, 4, 1)
