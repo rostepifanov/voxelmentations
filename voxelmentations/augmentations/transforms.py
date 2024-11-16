@@ -124,7 +124,7 @@ class PadIfNeeded(DualTransform):
     def apply_to_mask(self, mask, pads, **params):
         return FV.pad(mask, pads, self.border_mode, self.mask_fill_value)
 
-class Flip(DualTransform):
+class Flip(TripleTransform):
     """Flip a voxel along a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
@@ -145,8 +145,20 @@ class Flip(DualTransform):
 
         return {'dims': dims}
 
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        shape = params['voxel'].shape[:C.NUM_SPATIAL_DIMENSIONS]
+
+        return {'shape': shape}
+
     def apply(self, voxel, dims, **params):
         return FV.flip(voxel, dims)
+
+    def apply_to_points(self, voxel, dims, shape, **params):
+        return FG.flip(voxel, dims, shape)
 
 class AxialFlip(Flip):
     """Flip a voxel in z dim.
@@ -575,11 +587,7 @@ class Contrast(VoxelOnlyTransform):
     def get_transform_init_args_names(self):
         return ('contrast_limit', )
 
-    @property
-    def targets_as_params(self):
-        return ['voxel']
-
-    def get_params_dependent_on_targets(self, params):
+    def get_params(self):
         contrast = 1 + (2 * np.random.random() - 1) * self.contrast_limit
 
         return {'contrast': contrast}
