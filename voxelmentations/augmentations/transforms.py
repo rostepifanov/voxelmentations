@@ -219,7 +219,7 @@ class AxialPlaneTranpose(Tranpose):
     """
     _DIMS = (C.AXIAL_DIM, )
 
-class AxialPlaneAffine(DualTransform):
+class AxialPlaneAffine(TripleTransform):
     """Randomly deform axial planes of a voxel.
     """
     def __init__(
@@ -282,11 +282,23 @@ class AxialPlaneAffine(DualTransform):
 
         return {'scale': scale, 'shift': shift, 'angle': angle}
 
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        shape = params['voxel'].shape[:C.NUM_SPATIAL_DIMENSIONS]
+
+        return {'shape': shape}
+
     def apply(self, voxel, scale, shift, angle, **params):
         return FV.plane_affine(voxel, scale, shift, angle, self.interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
 
     def apply_to_mask(self, mask, scale, shift, angle, **params):
         return FV.plane_affine(mask, scale, shift, angle, self.mask_interpolation, self.border_mode, self.mask_fill_value, C.AXIAL_DIM)
+
+    def apply_to_points(self, points, scale, shift, angle, shape, **params):
+        return FG.plane_affine(points, scale, shift, angle, C.AXIAL_DIM, shape)
 
 class AxialPlaneScale(AxialPlaneAffine):
     """Randomly scale axial planes of a voxel.

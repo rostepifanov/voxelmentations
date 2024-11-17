@@ -4,18 +4,19 @@ import numpy as np
 
 import voxelmentations.core.enum as E
 import voxelmentations.core.constants as C
-import voxelmentations.augmentations.functional.volumetrical as FV
+
+from voxelmentations.augmentations.functional import FV, FG
 
 @pytest.mark.functional
 def test_plane_dropout_CASE_zero_dim():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     expected = np.expand_dims(
         np.array([0, 0, 3, 4]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     indices = [0, 1]
@@ -30,12 +31,12 @@ def test_plane_dropout_CASE_zero_dim():
 def test_pad_CASE_left_AND_constant_border():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     expected = np.expand_dims(
         np.array([1, 2, 3, 4, 0, 0]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     pads = ((0, 2), (0, 0), (0, 0))
@@ -50,12 +51,12 @@ def test_pad_CASE_left_AND_constant_border():
 def test_pad_CASE_left_AND_constant_border_AND_mono_channel():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
-        axis=(1, 2)
+        axis=(1, 2),
     )
 
     expected = np.expand_dims(
         np.array([1, 2, 3, 4, 0, 0]),
-        axis=(1, 2)
+        axis=(1, 2),
     )
 
     pads = ((0, 2), (0, 0), (0, 0))
@@ -70,12 +71,12 @@ def test_pad_CASE_left_AND_constant_border_AND_mono_channel():
 def test_pad_CASE_left_AND_replicate_border():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     expected = np.expand_dims(
         np.array([1, 2, 3, 4, 4, 4]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     pads = ((0, 2), (0, 0), (0, 0))
@@ -95,7 +96,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
             [ 9, 10, 11, 12],
             [13, 14, 15, 16],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     expected = np.expand_dims(
@@ -105,7 +106,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
             [15, 11,  7,  3],
             [16, 12,  8,  4],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     scale = 1.
@@ -124,7 +125,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
         interpolation,
         border_mode,
         fill_value,
-        dim
+        dim,
     )
 
     assert np.allclose(output, expected)
@@ -138,7 +139,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
             [ 9, 10],
             [13, 14],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     expected = np.expand_dims(
@@ -148,7 +149,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
             [10, 6],
             [ 0, 0],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     scale = 1.
@@ -167,7 +168,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
         interpolation,
         border_mode,
         fill_value,
-        dim
+        dim,
     )
 
     assert np.allclose(output, expected)
@@ -181,7 +182,7 @@ def test_plane_scale_CASE_twice_isotropic_upscaling():
             [ 9, 10, 11, 12],
             [13, 14, 15, 16],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     expected = np.expand_dims(
@@ -191,7 +192,7 @@ def test_plane_scale_CASE_twice_isotropic_upscaling():
             [10, 10, 11, 11],
             [10, 10, 11, 11],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     scale = 2.
@@ -210,7 +211,7 @@ def test_plane_scale_CASE_twice_isotropic_upscaling():
         interpolation,
         border_mode,
         fill_value,
-        dim
+        dim,
     )
 
     assert np.allclose(output, expected)
@@ -224,7 +225,7 @@ def test_plane_affine_CASE_only_shift():
             [ 9, 10, 11, 12],
             [13, 14, 15, 16],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     expected = np.expand_dims(
@@ -234,7 +235,7 @@ def test_plane_affine_CASE_only_shift():
             [ 0,  5,  6,  7],
             [ 0,  9, 10, 11],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     angle = 0
@@ -253,7 +254,7 @@ def test_plane_affine_CASE_only_shift():
         interpolation,
         border_mode,
         fill_value,
-        dim
+        dim,
     )
 
     assert np.allclose(output, expected)
@@ -267,7 +268,7 @@ def test_plane_affine_CASE_rotation_AND_shift():
             [ 9, 10, 11, 12],
             [13, 14, 15, 16],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     expected = np.expand_dims(
@@ -277,7 +278,7 @@ def test_plane_affine_CASE_rotation_AND_shift():
             [ 10, 6, 2, 0 ],
             [ 11, 7, 3, 0 ],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     scale = 1.
@@ -296,7 +297,7 @@ def test_plane_affine_CASE_rotation_AND_shift():
         interpolation,
         border_mode,
         fill_value,
-        dim
+        dim,
     )
 
     assert np.allclose(output, expected)
@@ -305,12 +306,12 @@ def test_plane_affine_CASE_rotation_AND_shift():
 def test_distort_CASE_identity():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     expected = np.expand_dims(
         np.array([1, 2, 3, 4]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     shape = np.array(input.shape[:C.NUM_SPATIAL_DIMENSIONS])
@@ -330,12 +331,12 @@ def test_contrast_CASE_contrast():
 
     input = np.expand_dims(
         np.array([0, -1, 1]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     expected = np.expand_dims(
         np.array([0, -2, 2]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     output = FV.contrast(input, contrast)
@@ -348,12 +349,12 @@ def test_gamma_CASE_gamma_square():
 
     input = np.expand_dims(
         np.array([1, -2, 3, 4]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     expected = np.expand_dims(
         np.array([1, -4, 9, 16]),
-        axis=(1, 2, 3)
+        axis=(1, 2, 3),
     )
 
     output = FV.gamma(input, gamma)
@@ -370,7 +371,7 @@ def test_reshape_CASE_twice_reshape():
             [ 1, 3],
             [ 5, 7],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     expected1 = np.expand_dims(
@@ -380,7 +381,7 @@ def test_reshape_CASE_twice_reshape():
             [ 5, 5, 7, 7],
             [ 5, 5, 7, 7],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     expected2 = np.copy(input)
@@ -400,7 +401,7 @@ def test_resсale_CASE_upsсale():
             [ 1, 3],
             [ 5, 7],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     expected = np.expand_dims(
@@ -410,7 +411,7 @@ def test_resсale_CASE_upsсale():
             [ 5, 5, 7, 7],
             [ 5, 5, 7, 7],
         ]),
-        axis=(2, 3)
+        axis=(2, 3),
     )
 
     output = FV.rescale(input, scale, E.InterType.NEAREST)
