@@ -47,10 +47,14 @@ def transpose(voxel, dims):
 @D.preserve_channel_dim
 def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_value, dim):
     shape = [*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS]][::-1]
+    shape = np.array(shape)
+
+    shift = (shape * shift)[::-1]
+
     point = [ 0.5 * ishape - 0.5 for ishape in shape ]
 
     K = G.get_translation_matrix(np.array(point))
-    T = G.get_affine_matrix((scale, scale), np.array(shape) * shift, angle)
+    T = G.get_affine_matrix((scale, scale), shift, angle)
 
     M = K @ T @ np.linalg.inv(K)
     M = M[:2]
