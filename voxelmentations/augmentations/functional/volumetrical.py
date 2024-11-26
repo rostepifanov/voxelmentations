@@ -39,7 +39,9 @@ def flip(voxel, dims):
     return np.flip(voxel, dims)
 
 def rot90(voxel, dims, times):
-    return np.rot90(voxel, times, dims)
+    """Rotate clockwise in plane formed by dims
+    """
+    return np.rot90(voxel, times, dims[::-1])
 
 def transpose(voxel, dims):
     return np.swapaxes(voxel, *dims)

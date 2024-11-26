@@ -46,6 +46,207 @@ def test_flip_CASE_outside_points():
     assert np.allclose(output, expected)
 
 @pytest.mark.functional
+def test_rot90_CASE_inside_points_AND_one_times():
+    input = np.array([
+        [1.5, 0.5, 1., 1.],
+        [2.5, 1.5, 1., 1.],
+        [1.5, 1.5, 1., 1.],
+    ])
+
+    expected = np.array([
+        [0.5, 2.5, 1., 1.],
+        [1.5, 1.5, 1., 1.],
+        [1.5, 2.5, 1., 1.],
+    ])
+
+    dims = [0, 1]
+    times = 1
+    shape = (4, 4, 4)
+
+    output = FG.rot90(input, dims, times, shape)
+
+    assert np.allclose(output, expected)
+
+@pytest.mark.functional
+def test_rot90_CASE_outside_points_AND_one_times():
+    input = np.array([
+        [-1.5,  0.5, 1., 1.],
+        [-2.5, -1.5, 1., 1.],
+    ])
+
+    expected = np.array([
+        [0.5,  5.5, 1., 1.],
+        [-1.5, 6.5, 1., 1.],
+    ])
+
+    dims = [0, 1]
+    times = 1
+    shape = (4, 4, 4)
+
+    output = FG.rot90(input, dims, times, shape)
+
+    assert np.allclose(output, expected)
+
+
+@pytest.mark.functional
+def test_rot90_CASE_inside_points_AND_opposite_directions():
+    input = np.array([
+        [1.5, 0.5, 1., 1.],
+        [2.5, 1.5, 1., 1.],
+        [1.5, 1.5, 1., 1.],
+    ])
+
+    expected = np.array([
+        [0.5, 2.5, 1., 1.],
+        [1.5, 1.5, 1., 1.],
+        [1.5, 2.5, 1., 1.],
+    ])
+
+    dims1 = [0, 1]
+    times1 = 1
+    shape1 = (4, 4, 4)
+
+    output1 = FG.rot90(input, dims1, times1, shape1)
+
+    dims2 = [1, 0]
+    times2 = 3
+    shape2 = (4, 4, 4)
+
+    output2 = FG.rot90(input, dims2, times2, shape2)
+
+    assert np.allclose(output1, output2)
+
+@pytest.mark.functional
+def test_rot90_CASE_inside_points_AND_two_times():
+    input = np.array([
+        [1.5, 0.5, 1., 1.],
+        [1.5, 1.5, 1., 1.],
+    ])
+
+    expected = np.array([
+        [2.5, 3.5, 1., 1.],
+        [2.5, 2.5, 1., 1.],
+    ])
+
+    dims = [0, 1]
+    times = 2
+    shape = (4, 4, 4)
+
+    output = FG.rot90(input, dims, times, shape)
+
+    assert np.allclose(output, expected)
+
+@pytest.mark.functional
+def test_rot90_CASE_inside_points_AND_three_times():
+    input = np.array([
+        [1.5, 0.5, 1., 1.],
+        [1.5, 1.5, 1., 1.],
+    ])
+
+    expected = np.array([
+        [3.5, 1.5, 1., 1.],
+        [2.5, 1.5, 1., 1.],
+    ])
+
+    dims = [0, 1]
+    times = 3
+    shape = (4, 4, 4)
+
+    output = FG.rot90(input, dims, times, shape)
+
+    assert np.allclose(output, expected)
+
+@pytest.mark.functional
+def test_rot90_CASE_one_times_AND_square_shape_AND_align_with_mask():
+    points = np.array([
+        [1.5, 0.5, 0.5, 1.0],
+    ])
+
+    mask = np.expand_dims(
+        np.array([
+            [ 0, 0, 0, 0],
+            [ 1, 0, 0, 0],
+            [ 0, 0, 0, 0],
+            [ 0, 0, 0, 0],
+        ]),
+        axis=(2, 3),
+    )
+
+    dims = [0, 1]
+    times = 1
+    shape = mask.shape
+
+    tpoints = FG.rot90(points, dims, times, shape)
+    tmask = FV.rot90(mask, dims, times)
+
+    for xidx, yidx, zidx in (tpoints + C.C2I_SHIFT)[:, :C.NUM_SPATIAL_COORDS].astype(np.int32):
+        assert tmask[xidx, yidx, zidx] == 1
+
+        tmask[xidx, yidx, zidx] = 0
+
+    assert np.all(tmask == 0)
+
+@pytest.mark.functional
+def test_rot90_CASE_two_times_AND_square_shape_AND_align_with_mask():
+    points = np.array([
+        [1.5, 0.5, 0.5, 1.0],
+    ])
+
+    mask = np.expand_dims(
+        np.array([
+            [ 0, 0, 0, 0],
+            [ 1, 0, 0, 0],
+            [ 0, 0, 0, 0],
+            [ 0, 0, 0, 0],
+        ]),
+        axis=(2, 3),
+    )
+
+    dims = [0, 1]
+    times = 2
+    shape = mask.shape
+
+    tpoints = FG.rot90(points, dims, times, shape)
+    tmask = FV.rot90(mask, dims, times)
+
+    for xidx, yidx, zidx in (tpoints + C.C2I_SHIFT)[:, :C.NUM_SPATIAL_COORDS].astype(np.int32):
+        assert tmask[xidx, yidx, zidx] == 1
+
+        tmask[xidx, yidx, zidx] = 0
+
+    assert np.all(tmask == 0)
+
+@pytest.mark.functional
+def test_rot90_CASE_three_times_AND_square_shape_AND_align_with_mask():
+    points = np.array([
+        [1.5, 0.5, 0.5, 1.0],
+    ])
+
+    mask = np.expand_dims(
+        np.array([
+            [ 0, 0, 0, 0],
+            [ 1, 0, 0, 0],
+            [ 0, 0, 0, 0],
+            [ 0, 0, 0, 0],
+        ]),
+        axis=(2, 3),
+    )
+
+    dims = [0, 1]
+    times = 3
+    shape = mask.shape
+
+    tpoints = FG.rot90(points, dims, times, shape)
+    tmask = FV.rot90(mask, dims, times)
+
+    for xidx, yidx, zidx in (tpoints + C.C2I_SHIFT)[:, :C.NUM_SPATIAL_COORDS].astype(np.int32):
+        assert tmask[xidx, yidx, zidx] == 1
+
+        tmask[xidx, yidx, zidx] = 0
+
+    assert np.all(tmask == 0)
+
+@pytest.mark.functional
 def test_transpose_CASE_ordered_dims():
     input = np.array([
         [1, 2, 3, 1],
