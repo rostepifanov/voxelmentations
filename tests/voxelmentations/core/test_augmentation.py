@@ -5,9 +5,9 @@ import voxelmentations as V
 
 @pytest.mark.core
 def test_Identity_CASE_repr():
-    transform = V.Identity(always_apply=True)
+    transformation = V.Identity(always_apply=True)
 
-    repr = str(transform)
+    repr = str(transformation)
 
     assert 'Identity' in repr
     assert 'always_apply' in repr
@@ -18,8 +18,8 @@ def test_Identity_CASE_voxel_only():
     input = np.random.randn(32, 32, 32, 1)
     expected =  np.copy(input)
 
-    transform = V.Identity(always_apply=True)
-    output = transform(voxel=input)['voxel']
+    transformation = V.Identity(always_apply=True)
+    output = transformation(voxel=input)['voxel']
 
     assert np.allclose(output, expected)
 
@@ -31,8 +31,8 @@ def test_Identity_CASE_voxel_AND_mask():
     tvoxel = np.copy(voxel)
     tmask = np.copy(mask)
 
-    transform = V.Identity(always_apply=True)
-    transformed = transform(voxel=tvoxel, mask=tmask)
+    transformation = V.Identity(always_apply=True)
+    transformed = transformation(voxel=tvoxel, mask=tmask)
 
     tvoxel = transformed['voxel']
     tmask = transformed['mask']
@@ -48,8 +48,8 @@ def test_Identity_CASE_voxel_AND_points():
     tvoxel = np.copy(voxel)
     tpoints = np.copy(points)
 
-    transform = V.Identity(always_apply=True)
-    transformed = transform(voxel=tvoxel, points=tpoints)
+    transformation = V.Identity(always_apply=True)
+    transformed = transformation(voxel=tvoxel, points=tpoints)
 
     tvoxel = transformed['voxel']
     tpoints = transformed['points']
@@ -62,10 +62,10 @@ def test_Transform_CASE_additional_targets():
     input = np.random.randn(32, 32, 32, 1)
     expected = np.copy(input)
 
-    transform = V.Identity(always_apply=True)
-    transform.add_targets({'voxel2': 'voxel'})
+    transformation = V.Identity(always_apply=True)
+    transformation.add_targets({'voxel2': 'voxel'})
 
-    output = transform(voxel=input, voxel2=input)['voxel2']
+    output = transformation(voxel=input, voxel2=input)['voxel2']
 
     assert np.allclose(output, expected)
 
@@ -73,7 +73,7 @@ def test_Transform_CASE_additional_targets():
 def test_Transform_CASE_additional_targets_CASE_key_rewrite():
     input = np.random.randn(32, 32, 32, 1)
 
-    transform = V.Identity(always_apply=True)
+    transformation = V.Identity(always_apply=True)
 
     with pytest.raises(ValueError):
-        transform.add_targets({'voxel': 'voxel'})
+        transformation.add_targets({'voxel': 'voxel'})

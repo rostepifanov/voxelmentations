@@ -1,7 +1,8 @@
-from voxelmentations.core.application import Apply
 from voxelmentations.core.utils import format_args
+from voxelmentations.core.transformation import Transformation
+from voxelmentations.core.serializable import register_as_serializable
 
-class Transform(Apply):
+class Augmentation(Transformation):
     """Root class for single augmentations
     """
     def __init__(self, always_apply=False, p=0.5):
@@ -12,18 +13,26 @@ class Transform(Apply):
                 p: float
                     the probability of application
         """
-        super(Transform, self).__init__(always_apply, p)
+        super(Augmentation, self).__init__(always_apply, p)
 
         self._targets = self.targets
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         raise NotImplementedError(
-            'Class {} is not serializable because the `get_transform_init_args_names` method is not '
+            'Class {} is not serializable because the `get_augmentation_init_args_names` method is not '
             'implemented'.format(self.get_class_name())
         )
 
-    def get_transform_init_args(self):
-        return {k: getattr(self, k) for k in self.get_transform_init_args_names()}
+    def get_augmentation_init_args(self):
+        return {k: getattr(self, k) for k in self.get_augmentation_init_args_names()}
+
+    def get_state_dict(self):
+        state = super().get_state_dict()
+
+        state.update(self.get_class_fullname_as_dict())
+        state.update(self.get_augmentation_init_args())
+
+        return state
 
     def __call__(self, *args, force_apply=False, **data):
         """
@@ -31,13 +40,13 @@ class Transform(Apply):
                 force_apply: bool
                     the flag of force application
                 data: dict
-                    the data to make a transformation
+                    the data to augment
 
             :return:
-                dict of transformed data
+                dict of augmentationed data
         """
         if args:
-            raise KeyError('You have to pass data to augmentations as named arguments, for example: aug(voxel=voxel)')
+            raise KeyError('You have to pass data to augmentation as named arguments, for example: aug(voxel=voxel)')
 
         if self.whether_apply(force_apply):
             params = self.get_params()
@@ -79,11 +88,11 @@ class Transform(Apply):
         raise NotImplementedError
 
     def add_targets(self, additional_targets):
-        """Add targets to transform them the same way as one of existing targets.
+        """Add targets to augment them the same way as one of existing targets.
 
             :NOTE:
                 for example: additional_targets = {'voxel2': 'voxel'}
-                adds new target voxel2 that transformed the same way as voxel
+                adds new target voxel2 that augmented the same way as voxel
 
             :args:
                 additional_targets: dict
@@ -125,15 +134,15 @@ class Transform(Apply):
 
     def __repr__(self):
         state = self.get_base_init_args()
-        state.update(self.get_transform_init_args())
+        state.update(self.get_augmentation_init_args())
 
         name = self.get_class_name()
         args=format_args(state)
 
         return '{}({})'.format(name, args)
 
-class VoxelOnlyTransform(Transform):
-    """Transform applied to voxel only
+class VoxelOnlyAugmentation(Augmentation):
+    """Augmentation applied to voxel only
     """
     def apply(self, voxel, **params):
         raise NotImplementedError
@@ -142,8 +151,8 @@ class VoxelOnlyTransform(Transform):
     def targets(self):
         return {'voxel': self.apply}
 
-class DualTransform(Transform):
-    """Transform applied to voxel and segmentation mask
+class DualAugmentation(Augmentation):
+    """Augmentation applied to voxel and segmentation mask
     """
     def apply_to_mask(self, mask, **params):
         return self.apply(mask, **params)
@@ -155,8 +164,8 @@ class DualTransform(Transform):
             'mask': self.apply_to_mask,
         }
 
-class TripleTransform(Transform):
-    """Transform applied to voxel, segmentation mask and key points
+class TripleAugmentation(Augmentation):
+    """Augmentation applied to voxel, segmentation mask and key points
     """
     def apply_to_mask(self, mask, **params):
         return self.apply(mask, **params)
@@ -169,10 +178,11 @@ class TripleTransform(Transform):
             'points': self.apply_to_points,
         }
 
-class Identity(TripleTransform):
-    """Identity transform
+@register_as_serializable
+class Identity(TripleAugmentation):
+    """Identity augmentation
     """
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return tuple()
 
     def apply(self, voxel, **params):

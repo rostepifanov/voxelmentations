@@ -5,9 +5,9 @@ import voxelmentations.core.constants as C
 import voxelmentations.augmentations.checkers as M
 
 from voxelmentations.augmentations.functional import FV, FG
-from voxelmentations.core.transforms import VoxelOnlyTransform, DualTransform, TripleTransform
+from voxelmentations.core.augmentation import VoxelOnlyAugmentation, DualAugmentation, TripleAugmentation
 
-class PadIfNeeded(DualTransform):
+class PadIfNeeded(DualAugmentation):
     """Pad shape of a voxel to a minimal shape.
     """
     def __init__(
@@ -51,7 +51,7 @@ class PadIfNeeded(DualTransform):
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
         self.mask_fill_value = M.prepare_int(mask_fill_value, 'mask_fill_value')
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return (
             'min_height',
             'min_width',
@@ -124,12 +124,12 @@ class PadIfNeeded(DualTransform):
     def apply_to_mask(self, mask, pads, **params):
         return FV.pad(mask, pads, self.border_mode, self.mask_fill_value)
 
-class Flip(TripleTransform):
+class Flip(TripleAugmentation):
     """Flip a voxel along a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return tuple()
 
     def get_params(self):
@@ -170,12 +170,12 @@ class AxialPlaneFlip(Flip):
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM)
 
-class Rotate90(TripleTransform):
+class Rotate90(TripleAugmentation):
     """Rotate clockwise on 90 degrees by x times a voxel on orthogonal plane to a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return tuple()
 
     def get_params(self):
@@ -206,12 +206,12 @@ class AxialPlaneRotate90(Rotate90):
     """
     _DIMS = (C.AXIAL_DIM, )
 
-class Tranpose(TripleTransform):
+class Tranpose(TripleAugmentation):
     """Transpose a voxel on orthogonal plane to a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return tuple()
 
     def get_params(self):
@@ -231,7 +231,7 @@ class AxialPlaneTranpose(Tranpose):
     """
     _DIMS = (C.AXIAL_DIM, )
 
-class AxialPlaneAffine(TripleTransform):
+class AxialPlaneAffine(TripleAugmentation):
     """Randomly deform axial planes of a voxel.
     """
     def __init__(
@@ -276,7 +276,7 @@ class AxialPlaneAffine(TripleTransform):
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
         self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return (
             'scale_limit',
             'shift_limit',
@@ -340,7 +340,7 @@ class AxialPlaneScale(AxialPlaneAffine):
         """
         super(AxialPlaneScale, self).__init__(scale_limit, 0, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return (
             'scale_limit',
             'border_mode',
@@ -377,7 +377,7 @@ class AxialPlaneTranslate(AxialPlaneAffine):
         """
         super(AxialPlaneTranslate, self).__init__(0, shift_limit, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return (
             'shift_limit',
             'border_mode',
@@ -414,7 +414,7 @@ class AxialPlaneRotate(AxialPlaneAffine):
         """
         super(AxialPlaneRotate, self).__init__(0, 0, angle_limit, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return (
             'angle_limit',
             'border_mode',
@@ -423,7 +423,7 @@ class AxialPlaneRotate(AxialPlaneAffine):
             'mask_fill_value'
         )
 
-class GaussNoise(VoxelOnlyTransform):
+class GaussNoise(VoxelOnlyAugmentation):
     """Randomly add gaussian noise to a voxel.
     """
     def __init__(
@@ -449,7 +449,7 @@ class GaussNoise(VoxelOnlyTransform):
         self.variance = M.prepare_non_negative_float(variance, 'variance')
         self.per_channel = per_channel
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return ('mean', 'variance', 'per_channel')
 
     @property
@@ -469,7 +469,7 @@ class GaussNoise(VoxelOnlyTransform):
     def apply(self, voxel, gauss, **params):
         return FV.add(voxel, gauss)
 
-class GaussBlur(VoxelOnlyTransform):
+class GaussBlur(VoxelOnlyAugmentation):
     """Blur by gaussian a voxel.
     """
     def __init__(
@@ -497,7 +497,7 @@ class GaussBlur(VoxelOnlyTransform):
         if self.min_kernel_size % 2 == 0 or self.max_kernel_size % 2 == 0:
             raise ValueError('Invalid range borders. Must be odd, but got: {}.'.format(kernel_size_range))
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return ('variance', 'kernel_size_range')
 
     def get_params(self):
@@ -517,7 +517,7 @@ class GaussBlur(VoxelOnlyTransform):
     def apply(self, voxel, kernel, **params):
         return FV.conv(voxel, kernel, E.BorderType.CONSTANT, 0)
 
-class IntensityShift(VoxelOnlyTransform):
+class IntensityShift(VoxelOnlyAugmentation):
     """Shift intensities of a voxel.
     """
     def __init__(
@@ -538,7 +538,7 @@ class IntensityShift(VoxelOnlyTransform):
 
         self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return ('shift_limit', )
 
     def get_params(self):
@@ -551,7 +551,7 @@ class IntensityShift(VoxelOnlyTransform):
     def apply(self, voxel, shift, **params):
         return FV.add(voxel, shift)
 
-class IntensityScale(VoxelOnlyTransform):
+class IntensityScale(VoxelOnlyAugmentation):
     """Scale intensities of a voxel.
     """
     def __init__(
@@ -572,7 +572,7 @@ class IntensityScale(VoxelOnlyTransform):
 
         self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return ('scale_limit', )
 
     @property
@@ -587,7 +587,7 @@ class IntensityScale(VoxelOnlyTransform):
     def apply(self, voxel, scale, **params):
         return FV.multiply(voxel, scale)
 
-class Contrast(VoxelOnlyTransform):
+class Contrast(VoxelOnlyAugmentation):
     """Change contrast of voxel.
     """
     def __init__(
@@ -608,7 +608,7 @@ class Contrast(VoxelOnlyTransform):
 
         self.contrast_limit = M.prepare_non_negative_float(contrast_limit, 'contrast_limit')
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return ('contrast_limit', )
 
     def get_params(self):
@@ -619,7 +619,7 @@ class Contrast(VoxelOnlyTransform):
     def apply(self, voxel, contrast, **params):
         return FV.contrast(voxel, contrast)
 
-class Gamma(VoxelOnlyTransform):
+class Gamma(VoxelOnlyAugmentation):
     """Apply gamma transform to intensities of a voxel.
     """
     def __init__(
@@ -640,7 +640,7 @@ class Gamma(VoxelOnlyTransform):
         self.min_gamma = gamma_range[0]
         self.max_gamma = gamma_range[1]
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return ('gamma_range', )
 
     def get_params(self):
@@ -651,7 +651,7 @@ class Gamma(VoxelOnlyTransform):
     def apply(self, voxel, gamma, **params):
         return FV.gamma(voxel, gamma)
 
-class GridDistort(DualTransform):
+class GridDistort(DualAugmentation):
     """Randomly distort a voxel by grid.
     """
     def __init__(
@@ -679,7 +679,7 @@ class GridDistort(DualTransform):
         self.interpolation = interpolation
         self.mask_interpolation = E.InterType.NEAREST
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return ('distort_limit', 'ncells', 'interpolation')
 
     @property
@@ -714,7 +714,7 @@ class GridDistort(DualTransform):
     def apply_to_mask(self, mask, distorted_grid, **params):
         return FV.distort(mask, distorted_grid, self.mask_interpolation)
 
-class ElasticDistort(DualTransform):
+class ElasticDistort(DualAugmentation):
     """Randomly elastic distort a voxel.
     """
     def __init__(
@@ -742,7 +742,7 @@ class ElasticDistort(DualTransform):
         self.interpolation = interpolation
         self.mask_interpolation = E.InterType.NEAREST
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return ('distort_limit', 'sigma', 'interpolation')
 
     @property
@@ -766,7 +766,7 @@ class ElasticDistort(DualTransform):
     def apply_to_mask(self, mask, distorted_grid, **params):
         return FV.distort(mask, distorted_grid, self.mask_interpolation)
 
-class PlaneDropout(VoxelOnlyTransform):
+class PlaneDropout(VoxelOnlyAugmentation):
     """Randomly drop out planes of a voxel along a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
@@ -791,7 +791,7 @@ class PlaneDropout(VoxelOnlyTransform):
 
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return ('nplanes', 'fill_value')
 
     @property
@@ -824,7 +824,7 @@ class AxialPlaneDropout(PlaneDropout):
     """
     _DIMS = (C.AXIAL_DIM, )
 
-class PatchDropout(VoxelOnlyTransform):
+class PatchDropout(VoxelOnlyAugmentation):
     """Randomly drop out patches of a voxel.
     """
     def __init__(
@@ -871,7 +871,7 @@ class PatchDropout(VoxelOnlyTransform):
 
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return (
             'npatches',
             'height_range',
@@ -912,7 +912,7 @@ class PatchDropout(VoxelOnlyTransform):
     def apply(self, voxel, patches, **params):
         return FV.patch_dropout(voxel, patches, self.fill_value)
 
-class PatchShuffle(VoxelOnlyTransform):
+class PatchShuffle(VoxelOnlyAugmentation):
     """Randomly shuffle pixels in patches of a voxel.
     """
     def __init__(
@@ -954,7 +954,7 @@ class PatchShuffle(VoxelOnlyTransform):
         self.min_depth_range = depth_range[0]
         self.max_depth_range = depth_range[1]
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return (
             'npatches',
             'height_range',
@@ -994,7 +994,7 @@ class PatchShuffle(VoxelOnlyTransform):
     def apply(self, voxel, patches, **params):
         return FV.patch_shuffle(voxel, patches)
 
-class Downscale(VoxelOnlyTransform):
+class Downscale(VoxelOnlyAugmentation):
     """Randomly reduce the resolution of voxel.
     """
     def __init__(
@@ -1018,7 +1018,7 @@ class Downscale(VoxelOnlyTransform):
         self.down_interpolation = interpolation
         self.up_interpolation = E.InterType.LINEAR
 
-    def get_transform_init_args_names(self):
+    def get_augmentation_init_args_names(self):
         return (
             'scale_limit',
             'down_interpolation',

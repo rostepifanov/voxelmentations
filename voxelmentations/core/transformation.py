@@ -1,9 +1,10 @@
 import numpy as np
 
+from voxelmentations.core.serializable import Serializable
 from voxelmentations.core.utils import get_shortest_class_fullname
 
-class Apply(object):
-    """Root class for single and compound augmentations
+class Transformation(Serializable):
+    """Root class for single and compound transformations
     """
 
     REPR_INDENT_STEP=2
@@ -27,6 +28,17 @@ class Apply(object):
         """
         return {'always_apply': self.always_apply, 'p': self.p}
 
+    def get_state_dict(self):
+        """
+            :return:
+                output: dict
+                    dict of parameters for initialization
+        """
+        state = super().get_state_dict()
+        state.update(self.get_base_init_args())
+
+        return state
+
     def whether_apply(self, force_apply):
         return force_apply or self.always_apply or (np.random.random() < self.p)
 
@@ -49,3 +61,12 @@ class Apply(object):
                     the full name of class
         """
         return get_shortest_class_fullname(cls)
+
+    @classmethod
+    def get_class_fullname_as_dict(cls):
+        """
+            :return:
+                output: dict
+                    the full name of class
+        """
+        return {'__class_fullname__': cls.get_class_fullname()}
