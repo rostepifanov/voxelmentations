@@ -1,1 +1,1 @@
-from voxelmentations.augmentations.transforms import *
+from voxelmentations.augmentations.transformations import *

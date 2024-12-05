@@ -136,3 +136,41 @@ def test_Transform_CASE_mask_fill_value(transform, monkeypatch):
 
     unique_values_mask = np.unique(transformed['mask'])
     assert set(unique_values_mask) == { base_value, mask_fill_value }
+
+@pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS + SHAPE_UNPRESERVED_TRANSFORMS)
+def test_Transform_CASE_to_dict_AND_from_load_AND_mono_channel(transform):
+    SEED = 1996
+
+    input = np.random.randn(32, 32, 32)
+
+    instance = transform(always_apply=True)
+
+    state_dict = instance.to_dict()
+    deserialized_instance = V.from_dict(state_dict)
+
+    np.random.seed(SEED)
+    output = instance(voxel=input)['voxel']
+
+    np.random.seed(SEED)
+    deserialized_output = deserialized_instance(voxel=input)['voxel']
+
+    assert np.allclose(deserialized_output, output)
+
+@pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS + SHAPE_UNPRESERVED_TRANSFORMS)
+def test_Transform_CASE_to_dict_AND_from_load_AND_multi_channel(transform):
+    SEED = 1996
+
+    input = np.random.randn(32, 32, 32, 2)
+
+    instance = transform(always_apply=True)
+
+    state_dict = instance.to_dict()
+    deserialized_instance = V.from_dict(state_dict)
+
+    np.random.seed(SEED)
+    output = instance(voxel=input)['voxel']
+
+    np.random.seed(SEED)
+    deserialized_output = deserialized_instance(voxel=input)['voxel']
+
+    assert np.allclose(deserialized_output, output)

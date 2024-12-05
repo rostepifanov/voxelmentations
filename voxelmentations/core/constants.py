@@ -2,6 +2,9 @@ import cv2
 
 import voxelmentations.core.enum as E
 
+KW_VERSION = '__version__'
+KW_CLASS_FULLNAME = '__class_fullname__'
+
 VERTICAL_DIM = 0
 HORIZONTAL_DIM = 1
 AXIAL_DIM = 2

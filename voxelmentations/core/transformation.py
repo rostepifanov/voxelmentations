@@ -1,5 +1,7 @@
 import numpy as np
 
+import voxelmentations.core.constants as C
+
 from voxelmentations.core.serializable import Serializable
 from voxelmentations.core.utils import get_shortest_class_fullname
 
@@ -69,4 +71,4 @@ class Transformation(Serializable):
                 output: dict
                     the full name of class
         """
-        return {'__class_fullname__': cls.get_class_fullname()}
+        return {C.KW_CLASS_FULLNAME: cls.get_class_fullname()}

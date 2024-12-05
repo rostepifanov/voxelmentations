@@ -1,3 +1,5 @@
+import voxelmentations.core.constants as C
+
 from voxelmentations import __version__
 
 REGISTRY_SERIALIZABLE = {}
@@ -18,12 +20,12 @@ class Serializable(object):
         """
         state_dict = self.get_state_dict()
 
-        return {'__version__': __version__, 'transformation': state_dict}
+        return {C.KW_VERSION: __version__, 'transformation': state_dict}
 
 def from_dict(state_dict):
     transformation = state_dict['transformation']
 
-    name = transformation.pop('__class_fullname__')
+    name = transformation.pop(C.KW_CLASS_FULLNAME)
     cls = REGISTRY_SERIALIZABLE[name]
 
     args = {}

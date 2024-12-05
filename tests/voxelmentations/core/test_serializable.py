@@ -42,6 +42,17 @@ def test_Identity_CASE_from_dict():
     assert transformation.always_apply == always_apply
 
 @pytest.mark.core
+def test_Identity_CASE_from_dict_AND_incomplete_args():
+    state_dict = {
+        '__version__': V.__version__,
+        'transformation': {
+            '__class_fullname__': 'Identity',
+        }
+    }
+
+    transformation = V.from_dict(state_dict)
+
+@pytest.mark.core
 def test_Sequential_CASE_to_dict():
     p = 1
     always_apply = True

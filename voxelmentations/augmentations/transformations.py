@@ -5,8 +5,10 @@ import voxelmentations.core.constants as C
 import voxelmentations.augmentations.checkers as M
 
 from voxelmentations.augmentations.functional import FV, FG
+from voxelmentations.core.serializable import register_as_serializable
 from voxelmentations.core.augmentation import VoxelOnlyAugmentation, DualAugmentation, TripleAugmentation
 
+@register_as_serializable
 class PadIfNeeded(DualAugmentation):
     """Pad shape of a voxel to a minimal shape.
     """
@@ -124,6 +126,7 @@ class PadIfNeeded(DualAugmentation):
     def apply_to_mask(self, mask, pads, **params):
         return FV.pad(mask, pads, self.border_mode, self.mask_fill_value)
 
+@register_as_serializable
 class Flip(TripleAugmentation):
     """Flip a voxel along a dim.
     """
@@ -160,16 +163,19 @@ class Flip(TripleAugmentation):
     def apply_to_points(self, points, dims, shape, **params):
         return FG.flip(points, dims, shape)
 
+@register_as_serializable
 class AxialFlip(Flip):
     """Flip a voxel in z dim.
     """
     _DIMS = (C.AXIAL_DIM, )
 
+@register_as_serializable
 class AxialPlaneFlip(Flip):
     """Flip a voxel in x-y plane.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM)
 
+@register_as_serializable
 class Rotate90(TripleAugmentation):
     """Rotate clockwise on 90 degrees by x times a voxel on orthogonal plane to a dim.
     """
@@ -201,11 +207,13 @@ class Rotate90(TripleAugmentation):
     def apply_to_points(self, points, dims, times, shape, **params):
         return FG.rot90(points, dims, times, shape)
 
+@register_as_serializable
 class AxialPlaneRotate90(Rotate90):
     """Rotate on 90 degrees by x times a voxel in x-y plane.
     """
     _DIMS = (C.AXIAL_DIM, )
 
+@register_as_serializable
 class Tranpose(TripleAugmentation):
     """Transpose a voxel on orthogonal plane to a dim.
     """
@@ -226,11 +234,13 @@ class Tranpose(TripleAugmentation):
     def apply_to_points(self, points, dims, **params):
         return FG.transpose(points, dims)
 
+@register_as_serializable
 class AxialPlaneTranpose(Tranpose):
     """Transpose a voxel in x-y plane.
     """
     _DIMS = (C.AXIAL_DIM, )
 
+@register_as_serializable
 class AxialPlaneAffine(TripleAugmentation):
     """Randomly deform axial planes of a voxel.
     """
@@ -267,7 +277,7 @@ class AxialPlaneAffine(TripleAugmentation):
 
         self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
         self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
-        self.angle_limit = M.prepare_inrange_zero_one_float(angle_limit / 180, 'angle_limit')
+        self.angle_limit = 180 * M.prepare_inrange_zero_one_float(angle_limit / 180, 'angle_limit')
 
         self.border_mode = border_mode
         self.interpolation = interpolation
@@ -290,7 +300,7 @@ class AxialPlaneAffine(TripleAugmentation):
     def get_params(self):
         scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
         shift = (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shift_limit
-        angle = 180 * (2 * np.random.random() - 1) * self.angle_limit
+        angle = 180 * (2 * np.random.random() - 1) * self.angle_limit / 180
 
         return {'scale': scale, 'shift': shift, 'angle': angle}
 
@@ -312,6 +322,7 @@ class AxialPlaneAffine(TripleAugmentation):
     def apply_to_points(self, points, scale, shift, angle, shape, **params):
         return FG.plane_affine(points, scale, shift, angle, C.AXIAL_DIM, shape)
 
+@register_as_serializable
 class AxialPlaneScale(AxialPlaneAffine):
     """Randomly scale axial planes of a voxel.
     """
@@ -349,6 +360,7 @@ class AxialPlaneScale(AxialPlaneAffine):
             'mask_fill_value'
         )
 
+@register_as_serializable
 class AxialPlaneTranslate(AxialPlaneAffine):
     """Randomly translate axial planes of a voxel.
     """
@@ -386,6 +398,7 @@ class AxialPlaneTranslate(AxialPlaneAffine):
             'mask_fill_value'
         )
 
+@register_as_serializable
 class AxialPlaneRotate(AxialPlaneAffine):
     """Randomly rotate axial planes of a voxel.
     """
@@ -423,6 +436,7 @@ class AxialPlaneRotate(AxialPlaneAffine):
             'mask_fill_value'
         )
 
+@register_as_serializable
 class GaussNoise(VoxelOnlyAugmentation):
     """Randomly add gaussian noise to a voxel.
     """
@@ -469,6 +483,7 @@ class GaussNoise(VoxelOnlyAugmentation):
     def apply(self, voxel, gauss, **params):
         return FV.add(voxel, gauss)
 
+@register_as_serializable
 class GaussBlur(VoxelOnlyAugmentation):
     """Blur by gaussian a voxel.
     """
@@ -517,6 +532,7 @@ class GaussBlur(VoxelOnlyAugmentation):
     def apply(self, voxel, kernel, **params):
         return FV.conv(voxel, kernel, E.BorderType.CONSTANT, 0)
 
+@register_as_serializable
 class IntensityShift(VoxelOnlyAugmentation):
     """Shift intensities of a voxel.
     """
@@ -551,6 +567,7 @@ class IntensityShift(VoxelOnlyAugmentation):
     def apply(self, voxel, shift, **params):
         return FV.add(voxel, shift)
 
+@register_as_serializable
 class IntensityScale(VoxelOnlyAugmentation):
     """Scale intensities of a voxel.
     """
@@ -587,6 +604,7 @@ class IntensityScale(VoxelOnlyAugmentation):
     def apply(self, voxel, scale, **params):
         return FV.multiply(voxel, scale)
 
+@register_as_serializable
 class Contrast(VoxelOnlyAugmentation):
     """Change contrast of voxel.
     """
@@ -619,6 +637,7 @@ class Contrast(VoxelOnlyAugmentation):
     def apply(self, voxel, contrast, **params):
         return FV.contrast(voxel, contrast)
 
+@register_as_serializable
 class Gamma(VoxelOnlyAugmentation):
     """Apply gamma transform to intensities of a voxel.
     """
@@ -651,6 +670,7 @@ class Gamma(VoxelOnlyAugmentation):
     def apply(self, voxel, gamma, **params):
         return FV.gamma(voxel, gamma)
 
+@register_as_serializable
 class GridDistort(DualAugmentation):
     """Randomly distort a voxel by grid.
     """
@@ -714,6 +734,7 @@ class GridDistort(DualAugmentation):
     def apply_to_mask(self, mask, distorted_grid, **params):
         return FV.distort(mask, distorted_grid, self.mask_interpolation)
 
+@register_as_serializable
 class ElasticDistort(DualAugmentation):
     """Randomly elastic distort a voxel.
     """
@@ -766,6 +787,7 @@ class ElasticDistort(DualAugmentation):
     def apply_to_mask(self, mask, distorted_grid, **params):
         return FV.distort(mask, distorted_grid, self.mask_interpolation)
 
+@register_as_serializable
 class PlaneDropout(VoxelOnlyAugmentation):
     """Randomly drop out planes of a voxel along a dim.
     """
@@ -809,21 +831,25 @@ class PlaneDropout(VoxelOnlyAugmentation):
     def apply(self, voxel, indices, dim, **params):
         return FV.plane_dropout(voxel, indices, self.fill_value, dim)
 
+@register_as_serializable
 class HorizontalPlaneDropout(PlaneDropout):
     """Randomly drop out horizontal planes of a voxel.
     """
     _DIMS = (C.HORIZONTAL_DIM, )
 
+@register_as_serializable
 class VerticalPlaneDropout(PlaneDropout):
     """Randomly drop out vertical planes of a voxel.
     """
     _DIMS = (C.VERTICAL_DIM, )
 
+@register_as_serializable
 class AxialPlaneDropout(PlaneDropout):
     """Randomly drop out axial planes of a voxel.
     """
     _DIMS = (C.AXIAL_DIM, )
 
+@register_as_serializable
 class PatchDropout(VoxelOnlyAugmentation):
     """Randomly drop out patches of a voxel.
     """
@@ -912,6 +938,7 @@ class PatchDropout(VoxelOnlyAugmentation):
     def apply(self, voxel, patches, **params):
         return FV.patch_dropout(voxel, patches, self.fill_value)
 
+@register_as_serializable
 class PatchShuffle(VoxelOnlyAugmentation):
     """Randomly shuffle pixels in patches of a voxel.
     """
@@ -994,34 +1021,38 @@ class PatchShuffle(VoxelOnlyAugmentation):
     def apply(self, voxel, patches, **params):
         return FV.patch_shuffle(voxel, patches)
 
+@register_as_serializable
 class Downscale(VoxelOnlyAugmentation):
     """Randomly reduce the resolution of voxel.
     """
     def __init__(
             self,
             scale_limit=0.25,
-            interpolation=E.InterType.NEAREST,
+            downscale_interpolation=E.InterType.NEAREST,
             always_apply=False,
             p=0.5,
         ):
         """
+            :NOTE:
+                interpolation mode for upscale is preset to NEAREST
+
             :args:
                 scale_limit: float
                     limit of resolution scale
-                interpolation: InterType
+                downscale_interpolation: InterType
                     interpolation mode for downscale
         """
         super(Downscale, self).__init__(always_apply, p)
 
         self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
 
-        self.down_interpolation = interpolation
-        self.up_interpolation = E.InterType.LINEAR
+        self.downscale_interpolation = downscale_interpolation
+        self.upscale_interpolation = E.InterType.LINEAR
 
     def get_augmentation_init_args_names(self):
         return (
             'scale_limit',
-            'down_interpolation',
+            'downscale_interpolation',
         )
 
     def get_params(self):
@@ -1030,4 +1061,4 @@ class Downscale(VoxelOnlyAugmentation):
         return {'scale': scale}
 
     def apply(self, voxel, scale, **params):
-        return FV.downscale(voxel, scale, self.down_interpolation, self.up_interpolation)
+        return FV.downscale(voxel, scale, self.downscale_interpolation, self.upscale_interpolation)
