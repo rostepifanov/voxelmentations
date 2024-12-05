@@ -74,14 +74,17 @@ def test_Transform_CASE_call_AND_mono_channel(transform):
 
     tvoxel, tmask, tpoints = transformed['voxel'], transformed['mask'], transformed['points']
 
+    assert tvoxel.flags['C_CONTIGUOUS'] == True
     assert tvoxel.shape == voxel.shape
     assert not np.allclose(tvoxel, voxel)
 
+    assert tmask.flags['C_CONTIGUOUS'] == True
     assert tmask.shape == mask.shape
 
     if isinstance(transform, V.VoxelOnlyAugmentation):
         assert np.all(tmask == mask)
 
+    assert tpoints.flags['C_CONTIGUOUS'] == True
     assert tpoints.shape == points.shape
 
     if isinstance(transform, V.VoxelOnlyAugmentation):
@@ -102,14 +105,17 @@ def test_Transform_CASE_call_AND_multi_channel(transform):
 
     tvoxel, tmask, tpoints = transformed['voxel'], transformed['mask'], transformed['points']
 
+    assert tvoxel.flags['C_CONTIGUOUS'] == True
     assert tvoxel.shape == voxel.shape
     assert not np.allclose(tvoxel, voxel)
 
+    assert tmask.flags['C_CONTIGUOUS'] == True
     assert tmask.shape == mask.shape
 
     if isinstance(transform, V.VoxelOnlyAugmentation):
         assert np.all(tmask == mask)
 
+    assert tpoints.flags['C_CONTIGUOUS'] == True
     assert tpoints.shape == points.shape
 
     if isinstance(transform, V.VoxelOnlyAugmentation):

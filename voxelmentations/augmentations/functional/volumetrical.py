@@ -36,15 +36,21 @@ def pad(voxel, pads, border_mode, fill_value):
     return voxel
 
 def flip(voxel, dims):
-    return np.flip(voxel, dims)
+    voxel = np.flip(voxel, dims)
+
+    return np.require(voxel, requirements=['C_CONTIGUOUS'])
 
 def rot90(voxel, dims, times):
     """Rotate clockwise in plane formed by dims
     """
-    return np.rot90(voxel, times, dims[::-1])
+    voxel = np.rot90(voxel, times, dims[::-1])
+
+    return np.require(voxel, requirements=['C_CONTIGUOUS'])
 
 def transpose(voxel, dims):
-    return np.swapaxes(voxel, *dims)
+    voxel = np.swapaxes(voxel, *dims)
+
+    return np.require(voxel, requirements=['C_CONTIGUOUS'])
 
 @D.preserve_channel_dim
 def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_value, dim):
