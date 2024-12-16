@@ -5,8 +5,7 @@ import voxelmentations.core.constants as C
 import voxelmentations.augmentations.checkers as M
 
 from voxelmentations.augmentations.functional import FV, FG
-from voxelmentations.core.serializable import register_as_serializable
-from voxelmentations.core.augmentation import VoxelOnlyAugmentation, DualAugmentation, TripleAugmentation
+from voxelmentations.core import VoxelOnlyAugmentation, DualAugmentation, TripleAugmentation, register_as_serializable
 
 @register_as_serializable
 class PadIfNeeded(DualAugmentation):
