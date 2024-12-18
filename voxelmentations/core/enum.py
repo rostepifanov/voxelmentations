@@ -12,6 +12,7 @@ class InterType(enum.Enum):
     NEAREST = 'nearest'
     LINEAR = 'linear'
     DEFAULT = LINEAR
+    MASK_DEFAULT = NEAREST
 
 class PositionType(enum.Enum):
     CENTER = 'center'

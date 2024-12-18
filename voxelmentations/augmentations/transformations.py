@@ -269,9 +269,9 @@ class AxialPlaneAffine(TripleAugmentation):
                 interpolation: InterType
                     interpolation mode
                 fill_value: float
-                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
+                    padding value of voxel if border_mode is BorderType.CONSTANT
                 mask_fill_value: int or None
-                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
+                    padding value if border_mode is BorderType.CONSTANT. if value is None, mask is not affected
         """
         super(AxialPlaneAffine, self).__init__(always_apply, p)
 

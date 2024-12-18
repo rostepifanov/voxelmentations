@@ -36,24 +36,72 @@ def pad(voxel, pads, border_mode, fill_value):
     return voxel
 
 def flip(voxel, dims):
+    """Flip along dims
+
+        :args:
+            dims: tuple of int
+                the value of dims to flip
+    """
     voxel = np.flip(voxel, dims)
 
     return np.require(voxel, requirements=['C_CONTIGUOUS'])
 
 def rot90(voxel, dims, times):
     """Rotate clockwise in plane formed by dims
+
+        :args:
+            dims: (int, int)
+                the value of dims to form rotating plane
+            times: int
+                the number of plane rotation by 90 degrees
     """
     voxel = np.rot90(voxel, times, dims[::-1])
 
     return np.require(voxel, requirements=['C_CONTIGUOUS'])
 
 def transpose(voxel, dims):
+    """Transose a plane formed by dims
+
+        :args:
+            dims: (int, int)
+                the value of dims to permute
+    """
     voxel = np.swapaxes(voxel, *dims)
 
     return np.require(voxel, requirements=['C_CONTIGUOUS'])
 
 @D.preserve_channel_dim
 def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_value, dim):
+    """Apply affine transformations to plane orthogonal to the dim
+
+        :NOTE:
+            Since the plane is rotated relative to its center, the matematical notation of transformation is:
+                K @ T @ inv(K),
+            where K is the translation of the origin to the center of plane.
+
+            Some confusions of OpenCV center:
+                1. https://answers.opencv.org/question/182793/centering-opencv-rotation/
+                2. https://answers.opencv.org/question/35111/origin-pixel-in-the-image-coordinate-system-in-opencv/
+
+            The correct OpenCV center of plane is 0.5 * (height - 1), 0.5 * (width - 1).
+            Probably this is connected with that of the left upper corner have coordinates is (1, 1), but not is (0, 0).
+
+        :args:
+            scale: float
+                scaling factor in range from 0 to 1
+            shift: float
+                translation factor in range from 0 to 1
+            angle: float
+                angle of rotation in range from 0 to 180
+            interpolation: InterType
+                interpolation mode
+            border_mode: BorderType
+                border mode
+            fill_value:
+                padding value if border_mode is BorderType.CONSTANT
+            dim:
+                the plane orthogonal to the dim is transformated
+    """
     shape = [*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS]][::-1]
     shape = np.array(shape)
 
