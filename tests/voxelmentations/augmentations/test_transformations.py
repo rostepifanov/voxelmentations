@@ -74,6 +74,8 @@ def test_Transform_CASE_call_AND_mono_channel(transform):
 
     tvoxel, tmask, tpoints = transformed['voxel'], transformed['mask'], transformed['points']
 
+    assert instance.keys() == instance.targets.keys()
+
     assert tvoxel.flags['C_CONTIGUOUS'] == True
     assert tvoxel.shape == voxel.shape
     assert not np.allclose(tvoxel, voxel)
@@ -104,6 +106,8 @@ def test_Transform_CASE_call_AND_multi_channel(transform):
     transformed = instance(voxel=tvoxel, mask=tmask, points=tpoints)
 
     tvoxel, tmask, tpoints = transformed['voxel'], transformed['mask'], transformed['points']
+
+    assert instance.keys() == instance.targets.keys()
 
     assert tvoxel.flags['C_CONTIGUOUS'] == True
     assert tvoxel.shape == voxel.shape

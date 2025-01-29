@@ -7,6 +7,12 @@ class Augmentation(Transformation):
     """
     def __init__(self, always_apply=False, p=0.5):
         """
+            :NOTE:
+                the keys and the target are not the same
+                the keys are extendable, but targets are predefined
+
+                the data under "key" is transformed with corresponding "target" function
+
             :args:
                 always_apply: bool
                     the flag of force application
@@ -15,7 +21,7 @@ class Augmentation(Transformation):
         """
         super(Augmentation, self).__init__(always_apply, p)
 
-        self._targets = self.targets
+        self._keys = {k: v for k, v in  zip(self.targets.keys(), self.targets.keys()) }
 
     def get_augmentation_init_args_names(self):
         raise NotImplementedError(
@@ -81,41 +87,53 @@ class Augmentation(Transformation):
     def targets(self):
         """
             :NOTE:
-                you must specify targets in subclass
+                you must specify targets and their functions in subclass
 
                 for example: ('voxel', ) or ('voxel', 'mask')
         """
         raise NotImplementedError
 
-    def add_targets(self, additional_targets):
-        """Add targets to augment them the same way as one of existing targets.
+    def keys(self):
+        """Return the keys that are transformed by target functions
+        """
+        return set(self._keys)
+
+    def add_keys(self, additional_keys):
+        """Add keys to augment them the same way as one of existing targets.
 
             :NOTE:
-                for example: additional_targets = {'voxel2': 'voxel'}
-                adds new target voxel2 that augmented the same way as voxel
+                for example: additional_keys = {'voxel2': 'voxel'}
+                adds new key "voxel2" that transformed by "voxel" target function
 
             :args:
-                additional_targets: dict
-                    keys - additional target name, values - existed target name.
+                additional_keys: dict
+                    keys - additional key name, values - existed target name.
         """
-        _targets = dict()
+        _keys = dict()
 
-        for additional_key, existed_key in additional_targets.items():
-            if additional_key in self._targets:
-                existed_keys = ' '.join(self._targets.keys())
+        for additional_key, existed_target in additional_keys.items():
+            if additional_key in self._keys:
+                existed_keys = ', '.join(self._keys)
 
                 raise ValueError(
-                    f'Trying to overwrite existed target. '
-                    f'Key={additional_key} exists in {existed_keys}',
+                    f'Trying to overwrite existed key. '
+                    f'Key={additional_key} exists in [{existed_keys}]',
                 )
-            elif existed_key in self._targets:
-                _targets[additional_key] = self._targets[existed_key]
+            elif existed_target in self.targets.keys():
+                _keys[additional_key] = self._keys[existed_target]
 
-        self._targets.update(_targets)
+        self._keys.update(_keys)
 
-    def _get_target_function(self, name):
-        target_function = self._targets.get(name, lambda x, **p: x)
-        return target_function
+        return self
+
+    def _get_target_function(self, key):
+        if key in self._keys:
+            target = self._keys[key]
+            function = self.targets[target]
+        else:
+            function = lambda x, **p: x
+
+        return function
 
     def apply_with_params(self, params, **data):
         if params is None:
@@ -123,12 +141,12 @@ class Augmentation(Transformation):
 
         pdata = {}
 
-        for name, datum in data.items():
+        for key, datum in data.items():
             if datum is not None:
-                target_function = self._get_target_function(name)
-                pdata[name] = target_function(datum, **params)
+                target_function = self._get_target_function(key)
+                pdata[key] = target_function(datum, **params)
             else:
-                pdata[name] = None
+                pdata[key] = None
 
         return pdata
 

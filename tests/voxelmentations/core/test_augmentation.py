@@ -58,22 +58,45 @@ def test_Identity_CASE_voxel_AND_points():
     assert np.allclose(tpoints, points)
 
 @pytest.mark.core
-def test_Transform_CASE_additional_targets():
+def test_Transform_CASE_additional_keys():
     input = np.random.randn(32, 32, 32, 1)
     expected = np.copy(input)
 
     transformation = V.Identity(always_apply=True)
-    transformation.add_targets({'voxel2': 'voxel'})
+    transformation.add_keys({'voxel2': 'voxel'})
 
     output = transformation(voxel=input, voxel2=input)['voxel2']
 
+    assert 'voxel2' in transformation.keys()
     assert np.allclose(output, expected)
 
 @pytest.mark.core
-def test_Transform_CASE_additional_targets_CASE_key_rewrite():
-    input = np.random.randn(32, 32, 32, 1)
-
+def test_Transform_CASE_additional_keys_CASE_key_rewrite():
     transformation = V.Identity(always_apply=True)
 
     with pytest.raises(ValueError):
-        transformation.add_targets({'voxel': 'voxel'})
+        transformation.add_keys({'voxel': 'voxel'})
+
+@pytest.mark.core
+def test_Augmentation_CASE_additional_keys_AND_chain_call():
+    input = np.random.randn(32, 32, 32, 1)
+    expected = np.copy(input)
+
+    transformation = V.Identity(always_apply=True).add_keys({'voxel2': 'voxel'})
+
+    output = transformation(voxel=input, voxel2=input)['voxel2']
+
+    assert 'voxel2' in transformation.keys()
+    assert np.allclose(output, expected)
+
+@pytest.mark.core
+def test_Composition_CASE_additional_keys_AND_chain_call():
+    input = np.random.randn(32, 32, 32, 1)
+    expected = np.copy(input)
+
+    transformation = V.Sequential([], always_apply=True).add_keys({'voxel2': 'voxel'})
+
+    output = transformation(voxel=input, voxel2=input)['voxel2']
+
+    assert not transformation.keys()
+    assert np.allclose(output, expected)
