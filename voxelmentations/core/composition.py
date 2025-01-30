@@ -44,19 +44,25 @@ class Composition(Transformation):
     def __getitem__(self, idx):
         return self.transformations[idx]
 
-    def add_targets(self, additional_targets):
-        """Add targets to transform them the same way as one of existing targets.
+    def keys(self):
+        """Return the keys that are transformed by target functions
+        """
+        return set.union(*(t.keys() for t in self.transformations)) if self.transformations else set()
+
+    def add_keys(self, additional_keys):
+        """Add keys to transform them the same way as one of existing targets.
 
             :NOTE:
-                for example: additional_targets = {'voxel2': 'voxel'}
-                adds new target voxel2 that transformed the same way as voxel
+                for example: additional_keys = {'voxel2': 'voxel'}
+                adds new key "voxel2" that transformed by "voxel" target function
 
             :args:
-                additional_targets: dict
-                    keys - additional target name, values - existed target name.
+                additional_keys: dict
+                    keys - additional key name, values - existed target name.
         """
-        for transformation in self.transformations:
-            transformation.add_targets(additional_targets)
+        for t in self.transformations: t.add_keys(additional_keys)
+
+        return self
 
     def __repr__(self):
         return self.repr()
