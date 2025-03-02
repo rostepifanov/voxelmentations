@@ -61,7 +61,7 @@ def test_Transform_CASE_repr(transform):
 
 @pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS)
 def test_Transform_CASE_call_AND_mono_channel(transform):
-    voxel = np.random.randn(32, 32, 32)
+    voxel = np.random.randn(32, 32, 32).astype(np.float32)
     mask = np.ones((32, 32, 32), dtype=np.uint8)
     points = np.ones((24, C.NUM_COORDS), dtype=np.float32)
 
@@ -77,16 +77,19 @@ def test_Transform_CASE_call_AND_mono_channel(transform):
     assert instance.keys() == instance.targets.keys()
 
     assert tvoxel.flags['C_CONTIGUOUS'] == True
+    assert tvoxel.dtype == voxel.dtype
     assert tvoxel.shape == voxel.shape
     assert not np.allclose(tvoxel, voxel)
 
     assert tmask.flags['C_CONTIGUOUS'] == True
+    assert tmask.dtype == mask.dtype
     assert tmask.shape == mask.shape
 
     if isinstance(transform, V.VoxelOnlyAugmentation):
         assert np.all(tmask == mask)
 
     assert tpoints.flags['C_CONTIGUOUS'] == True
+    assert tpoints.dtype == points.dtype
     assert tpoints.shape == points.shape
 
     if isinstance(transform, V.VoxelOnlyAugmentation):
@@ -94,7 +97,7 @@ def test_Transform_CASE_call_AND_mono_channel(transform):
 
 @pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS)
 def test_Transform_CASE_call_AND_multi_channel(transform):
-    voxel = np.random.randn(32, 32, 32, 2)
+    voxel = np.random.randn(32, 32, 32, 2).astype(np.float32)
     mask = np.ones((32, 32, 32, 1), dtype=np.uint8)
     points = np.ones((24, C.NUM_COORDS), dtype=np.float32)
 

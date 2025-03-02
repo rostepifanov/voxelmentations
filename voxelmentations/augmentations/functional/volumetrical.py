@@ -132,10 +132,10 @@ def add(voxel, other):
     if len(voxel.shape) > len(other.shape):
         other = np.expand_dims(other, axis=C.CHANNEL_DIM)
 
-    return np.add(voxel, other)
+    return np.add(voxel, other, dtype=voxel.dtype)
 
 def multiply(voxel, factor):
-    return np.multiply(voxel, factor)
+    return np.multiply(voxel, factor, dtype=voxel.dtype)
 
 def conv(voxel, kernel, border_mode, fill_value):
     if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
