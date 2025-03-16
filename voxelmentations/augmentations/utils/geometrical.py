@@ -1,6 +1,42 @@
 import numpy as np
 
-def get_rotation_matrix(angle):
+def get_volumetric_translation_matrix(shifts):
+    """Get 4x4 translation matrix for volumetric transformation
+
+        :args:
+            shifts: (float, float, float)
+                shifts in pixels
+    """
+    xshift, yshift, zshift = shifts
+
+    M = np.array([
+        [ 1., 0., 0., xshift ],
+        [ 0., 1., 0., yshift ],
+        [ 0., 0., 1., zshift ],
+        [ 0., 0., 0.,     1. ],
+    ])
+
+    return M
+
+def get_volumetric_scaling_matrix(scales):
+    """Get 4x4 scaling matrix for volumetric transformation
+
+        :args:
+            scales: (float, float, float)
+                scales as ratio
+    """
+    xscale, yscale, zscale = scales
+
+    M = np.array([
+        [ xscale,     0.,     0., 0. ],
+        [     0., yscale,     0., 0. ],
+        [     0.,     0., zscale, 0. ],
+        [     0.,     0.,     0., 1. ],
+    ])
+
+    return M
+
+def get_planar_rotation_matrix(angle):
     """Get 3x3 clockwise rotation matrix for planar transformation
 
         :args:
@@ -17,7 +53,7 @@ def get_rotation_matrix(angle):
 
     return M
 
-def get_translation_matrix(shifts):
+def get_planar_translation_matrix(shifts):
     """Get 3x3 translation matrix for planar transformation
 
         :args:
@@ -34,7 +70,7 @@ def get_translation_matrix(shifts):
 
     return M
 
-def get_scaling_matrix(scales):
+def get_planar_scaling_matrix(scales):
     """Get 3x3 scaling matrix for planar transformation
 
         :args:
@@ -51,7 +87,7 @@ def get_scaling_matrix(scales):
 
     return M
 
-def get_shear_matrix(shears):
+def get_planar_shear_matrix(shears):
     """Get 3x3 shear matrix for planar transformation
 
         :args:
@@ -70,10 +106,10 @@ def get_shear_matrix(shears):
 
     return M
 
-def get_affine_matrix(scales, shiftes, angle):
-    T1 = get_scaling_matrix(scales)
+def get_planar_affine_matrix(scales, shiftes, angle):
+    T1 = get_planar_scaling_matrix(scales)
 
-    T3 = get_translation_matrix(shiftes)
-    T4 = get_rotation_matrix(angle)
+    T3 = get_planar_translation_matrix(shiftes)
+    T4 = get_planar_rotation_matrix(angle)
 
     return T4 @ T3 @ T1

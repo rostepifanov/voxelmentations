@@ -70,6 +70,56 @@ def transpose(voxel, dims):
 
     return np.require(voxel, requirements=['C_CONTIGUOUS'])
 
+def scale(voxel, scale, interpolation, border_mode, fill_value):
+    """Apply scale transformations to volume
+
+        :NOTE:
+            Scipy uses "backward" notation that means I = M @ O + offset,
+            where I is input image, O is output image.
+
+            Ordinary it is used "forward" notation that means I and O are swapped:
+                O = M' @ I + offset'
+                I = inv(M') @ O - inv(M') @ offset'
+
+            Thus, M = inv(M') and offset = inv(M') @ offset',
+            where M and offset are args of affine_transform.
+
+            Some confusions of offset:
+                OpenCV center is calculated by 0.5 * (size - 1)
+                Scipy center is calculated by (size - 1) // 2
+
+            Despite the OpenCV and Scipy transformations are equal for scaling,
+            probably the Scipy offset calculation may has a bug.
+
+        :args:
+            scale: float
+                scaling factor in range from 0 to 1
+            interpolation: InterType
+                interpolation mode
+            border_mode: BorderType
+                border mode
+            fill_value:
+                padding value if border_mode is BorderType.CONSTANT
+    """
+    shape = voxel.shape[:C.NUM_SPATIAL_DIMENSIONS]
+    shape = np.array(shape)
+
+    T = G.get_volumetric_scaling_matrix(scale)
+
+    point = np.array([ (ishape - 1) // 2 for ishape in shape ] + [0])
+    offset = np.linalg.inv(T) @ point
+
+    voxel = sc.ndimage.affine_transform(
+        voxel,
+        np.linalg.inv(T),
+        offset=offset,
+        order=C.MAP_INTER_TO_SC[interpolation],
+        mode=C.MAP_BORDER_TYPE_TO_SC[border_mode],
+        cval=fill_value,
+    )
+
+    return voxel
+
 @D.preserve_channel_dim
 def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_value, dim):
     """Apply affine transformations to plane orthogonal to the dim
@@ -105,12 +155,13 @@ def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_va
     shape = [*voxel.shape[:dim], *voxel.shape[dim+1:C.NUM_SPATIAL_DIMENSIONS]][::-1]
     shape = np.array(shape)
 
+    scale = scale[::-1]
     shift = (shape * shift)[::-1]
 
     point = [ 0.5 * ishape - 0.5 for ishape in shape ]
 
-    K = G.get_translation_matrix(np.array(point))
-    T = G.get_affine_matrix((scale, scale), shift, angle)
+    K = G.get_planar_translation_matrix(np.array(point))
+    T = G.get_planar_affine_matrix(scale, shift, angle)
 
     M = K @ T @ np.linalg.inv(K)
     M = M[:2]

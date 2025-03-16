@@ -37,14 +37,22 @@ def transpose(points, dims):
 
     return points
 
+def scale(points, scale):
+    points = np.copy(points)
+
+    M = G.get_volumetric_scaling_matrix(scale)
+    np.matmul(points, M.T, out=points)
+
+    return points
+
 def plane_affine(points, scale, shift, angle, dim, shape):
     points = np.copy(points)
 
     shape = [*shape[:dim], *shape[dim+1:C.NUM_SPATIAL_DIMENSIONS]]
     point = [ 0.5 * ishape for ishape in shape ]
 
-    K = G.get_translation_matrix(np.array(point))
-    T = G.get_affine_matrix((scale, scale), np.array(shape) * shift, -angle)
+    K = G.get_planar_translation_matrix(np.array(point))
+    T = G.get_planar_affine_matrix(scale, np.array(shape) * shift, -angle)
 
     M = K @ T @ np.linalg.inv(K)
 

@@ -12,6 +12,7 @@ SHAPE_PRESERVED_TRANSFORMS = [
     V.AxialPlaneRotate90,
     V.Tranpose,
     V.AxialPlaneTranpose,
+    V.Scale,
     V.AxialPlaneAffine,
     V.AxialPlaneScale,
     V.AxialPlaneTranslate,
@@ -39,7 +40,7 @@ SHAPE_UNPRESERVED_TRANSFORMS = [
 
 MASK_FILL_VALUE_TRANSFORMS = {
     V.PadIfNeeded: {'pads': ((1, 1), (1, 1), (1, 1))},
-    V.AxialPlaneAffine: {'angle': 5., 'shift': 0., 'scale': 0.95},
+    V.AxialPlaneAffine: {'angle': 5., 'shift': 0., 'scale': (0.95, 0.95)},
 }
 
 @pytest.fixture(scope='function', autouse=True)

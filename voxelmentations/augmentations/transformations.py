@@ -240,6 +240,67 @@ class AxialPlaneTranpose(Tranpose):
     _DIMS = (C.AXIAL_DIM, )
 
 @register_as_serializable
+class Scale(TripleAugmentation):
+    """Randomly scale a voxel.
+    """
+    def __init__(
+            self,
+            scale_limit=0.05,
+            border_mode=E.BorderType.DEFAULT,
+            interpolation=E.InterType.DEFAULT,
+            fill_value=0,
+            mask_fill_value=0,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                scale_limit: float
+                    limit of scaling
+                border_mode: BorderType
+                    border mode
+                interpolation: InterType
+                    interpolation mode
+                fill_value: float
+                    padding value of voxel if border_mode is BorderType.CONSTANT
+                mask_fill_value: int or None
+                    padding value if border_mode is BorderType.CONSTANT. if value is None, mask is not affected
+        """
+        super(Scale, self).__init__(always_apply, p)
+
+        self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
+
+        self.border_mode = border_mode
+        self.interpolation = interpolation
+        self.mask_interpolation = E.InterType.NEAREST
+
+        self.fill_value = M.prepare_float(fill_value, 'fill_value')
+        self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
+
+    def get_augmentation_init_args_names(self):
+        return (
+            'scale_limit',
+            'border_mode',
+            'interpolation',
+            'fill_value',
+            'mask_fill_value'
+        )
+
+    def get_params(self):
+        scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
+
+        return {'scale': (scale, scale, scale)}
+
+    def apply(self, voxel, scale, **params):
+        return FV.scale(voxel, scale, self.interpolation, self.border_mode, self.fill_value)
+
+    def apply_to_mask(self, mask, scale, **params):
+        return FV.scale(mask, scale, self.mask_interpolation, self.border_mode, self.mask_fill_value)
+
+    def apply_to_points(self, points, scale, **params):
+        return FG.scale(points, scale)
+
+@register_as_serializable
 class AxialPlaneAffine(TripleAugmentation):
     """Randomly deform axial planes of a voxel.
     """
@@ -301,7 +362,7 @@ class AxialPlaneAffine(TripleAugmentation):
         shift = (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shift_limit
         angle = 180 * (2 * np.random.random() - 1) * self.angle_limit / 180
 
-        return {'scale': scale, 'shift': shift, 'angle': angle}
+        return {'scale': (scale, scale), 'shift': shift, 'angle': angle}
 
     @property
     def targets_as_params(self):

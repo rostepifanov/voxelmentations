@@ -294,7 +294,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
         [1.5, 1.5, 0.5, 1.0],
     ])
 
-    scale = 1.
+    scale = (1., 1.)
     shift = 0.
     angle = 90
     dim = C.AXIAL_DIM
@@ -327,7 +327,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape_AND_align_with_ma
         axis=(2, 3),
     )
 
-    scale = 1.
+    scale = (1., 1.)
     shift = 0.
     angle = 90
     interpolation = E.InterType.NEAREST
@@ -373,7 +373,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
         [1.5, 1.5, 0.5, 1.0],
     ])
 
-    scale = 1.
+    scale = (1., 1.)
     shift = 0.
     angle = 90.
     dim = C.AXIAL_DIM
@@ -406,7 +406,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape_AND_align_with
         axis=(2, 3),
     )
 
-    scale = 1.
+    scale = (1., 1.)
     shift = 0.
     angle = 90.
     interpolation = E.InterType.NEAREST
@@ -454,7 +454,7 @@ def test_plane_scale_CASE_twice_isotropic_upscaling():
         [ 3.0,  1.0, 0.5, 1.0],
     ])
 
-    scale = 2.
+    scale = (2., 2.)
     shift = 0.
     angle = 0.
     dim = C.AXIAL_DIM
@@ -487,7 +487,7 @@ def test_plane_scale_CASE_twice_isotropic_upscaling_AND_align_with_mask():
         axis=(2, 3),
     )
 
-    scale = 2.
+    scale = (2., 2.)
     shift = 0.
     angle = 0.
     interpolation = E.InterType.NEAREST
@@ -535,7 +535,7 @@ def test_plane_scale_CASE_twice_isotropic_downscaling_AND_align_with_mask():
         axis=(2, 3),
     )
 
-    scale = 0.5
+    scale = (0.5, 0.5)
     shift = 0.
     angle = 0.
     interpolation = E.InterType.NEAREST
@@ -586,7 +586,7 @@ def test_plane_affine_CASE_only_shift():
 
     angle = 0
     shift = 0.25
-    scale = 1
+    scale = (1., 1.)
     dim = C.AXIAL_DIM
     shape = (4, 4, 1, 1)
 
@@ -619,7 +619,7 @@ def test_plane_affine_CASE_only_shift_AND_align_with_mask():
 
     angle = 0
     shift = 0.25
-    scale = 1
+    scale = (1., 1.)
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -668,7 +668,7 @@ def test_plane_affine_CASE_only_anisotropic_shift():
 
     angle = 0
     shift = (0.25, 0.5)
-    scale = 1
+    scale = (1., 1.)
     dim = C.AXIAL_DIM
     shape = (4, 4, 1, 1)
 
@@ -701,7 +701,7 @@ def test_plane_affine_CASE_only_anisotropic_shift_AND_align_with_mask():
 
     angle = 0
     shift = (0.25, 0.5)
-    scale = 1
+    scale = (1., 1.)
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
