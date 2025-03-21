@@ -85,8 +85,8 @@ def scale(voxel, scale, interpolation, border_mode, fill_value):
             where M and offset are args of affine_transform.
 
             Some confusions of offset:
-                OpenCV center is calculated by 0.5 * (size - 1)
-                Scipy center is calculated by (size - 1) // 2
+                OpenCV center is calculated by (size - 1) / 2 (float)
+                Scipy center is calculated by (size - 1) // 2 (integer)
 
             Despite the OpenCV and Scipy transformations are equal for scaling,
             probably the Scipy offset calculation may has a bug.
@@ -129,12 +129,12 @@ def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_va
                 K @ T @ inv(K),
             where K is the translation of the origin to the center of plane.
 
-            Some confusions of OpenCV center:
+            Some confusions of plane center in OpenCV:
                 1. https://answers.opencv.org/question/182793/centering-opencv-rotation/
                 2. https://answers.opencv.org/question/35111/origin-pixel-in-the-image-coordinate-system-in-opencv/
 
-            The correct OpenCV center of plane is 0.5 * (height - 1), 0.5 * (width - 1).
-            Probably this is connected with that of the left upper corner have coordinates is (1, 1), but not is (0, 0).
+            Since the right lower corner has coordinates equal to (height - 1, width - 1),
+            than plane center in OpenCV has coordinates equal to (height - 1) / 2, (width - 1) / 2.
 
         :args:
             scale: float
@@ -158,9 +158,9 @@ def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_va
     scale = scale[::-1]
     shift = (shape * shift)[::-1]
 
-    point = [ 0.5 * ishape - 0.5 for ishape in shape ]
+    point = (shape - 1) / 2
 
-    K = G.get_planar_translation_matrix(np.array(point))
+    K = G.get_planar_translation_matrix(point)
     T = G.get_planar_affine_matrix(scale, shift, angle)
 
     M = K @ T @ np.linalg.inv(K)
