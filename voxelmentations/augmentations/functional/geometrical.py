@@ -49,10 +49,13 @@ def plane_affine(points, scale, shift, angle, dim, shape):
     points = np.copy(points)
 
     shape = [*shape[:dim], *shape[dim+1:C.NUM_SPATIAL_DIMENSIONS]]
-    point = [ 0.5 * ishape for ishape in shape ]
+    shape = np.array(shape)
 
-    K = G.get_planar_translation_matrix(np.array(point))
-    T = G.get_planar_affine_matrix(scale, np.array(shape) * shift, -angle)
+    shift = shift * shape
+    point = 0.5 * shape
+
+    K = G.get_planar_translation_matrix(point)
+    T = G.get_planar_affine_matrix(scale, shift, -angle)
 
     M = K @ T @ np.linalg.inv(K)
 

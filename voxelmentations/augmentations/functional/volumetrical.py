@@ -157,7 +157,6 @@ def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_va
 
     scale = scale[::-1]
     shift = (shape * shift)[::-1]
-
     point = (shape - 1) / 2
 
     K = G.get_planar_translation_matrix(point)
