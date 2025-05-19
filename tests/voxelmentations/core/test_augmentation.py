@@ -71,6 +71,24 @@ def test_Transform_CASE_additional_keys():
     assert np.allclose(output, expected)
 
 @pytest.mark.core
+def test_Transform_CASE_additional_keys_AND_two_keys():
+    input = np.random.randn(32, 32, 32, 1)
+    expected = np.copy(input)
+
+    transformation = V.Identity(always_apply=True)
+    transformation.add_keys({'voxel2': 'voxel', 'voxel3': 'voxel'})
+
+    transformed = transformation(voxel=input, voxel2=input, voxel3=input)
+    tvoxel2 = transformed['voxel2']
+    tvoxel3 = transformed['voxel3']
+
+    assert 'voxel2' in transformation.keys()
+    assert np.allclose(tvoxel2, expected)
+
+    assert 'voxel3' in transformation.keys()
+    assert np.allclose(tvoxel3, expected)
+
+@pytest.mark.core
 def test_Transform_CASE_additional_keys_CASE_key_rewrite():
     transformation = V.Identity(always_apply=True)
 
