@@ -170,19 +170,6 @@ class VoxelOnlyAugmentation(Augmentation):
         return {'voxel': self.apply}
 
 class DualAugmentation(Augmentation):
-    """Augmentation applied to voxel and segmentation mask
-    """
-    def apply_to_mask(self, mask, **params):
-        return self.apply(mask, **params)
-
-    @property
-    def targets(self):
-        return {
-            'voxel': self.apply,
-            'mask': self.apply_to_mask,
-        }
-
-class TripleAugmentation(Augmentation):
     """Augmentation applied to voxel, segmentation mask and key points
     """
     def apply_to_mask(self, mask, **params):
@@ -197,7 +184,7 @@ class TripleAugmentation(Augmentation):
         }
 
 @register_as_serializable
-class Identity(TripleAugmentation):
+class Identity(DualAugmentation):
     """Identity augmentation
     """
     def get_augmentation_init_args_names(self):

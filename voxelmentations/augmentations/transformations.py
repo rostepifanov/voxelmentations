@@ -5,7 +5,7 @@ import voxelmentations.core.constants as C
 import voxelmentations.augmentations.checkers as M
 
 from voxelmentations.augmentations.functional import FV, FG
-from voxelmentations.core import VoxelOnlyAugmentation, DualAugmentation, TripleAugmentation, register_as_serializable
+from voxelmentations.core import VoxelOnlyAugmentation, DualAugmentation, register_as_serializable
 
 @register_as_serializable
 class PadIfNeeded(DualAugmentation):
@@ -125,8 +125,11 @@ class PadIfNeeded(DualAugmentation):
     def apply_to_mask(self, mask, pads, **params):
         return FV.pad(mask, pads, self.border_mode, self.mask_fill_value)
 
+    def apply_to_points(self, points, pads, **data):
+        raise NotImplemented()
+
 @register_as_serializable
-class Flip(TripleAugmentation):
+class Flip(DualAugmentation):
     """Flip a voxel along a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
@@ -175,7 +178,7 @@ class AxialPlaneFlip(Flip):
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM)
 
 @register_as_serializable
-class Rotate90(TripleAugmentation):
+class Rotate90(DualAugmentation):
     """Rotate clockwise on 90 degrees by x times a voxel on orthogonal plane to a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
@@ -213,7 +216,7 @@ class AxialPlaneRotate90(Rotate90):
     _DIMS = (C.AXIAL_DIM, )
 
 @register_as_serializable
-class Tranpose(TripleAugmentation):
+class Tranpose(DualAugmentation):
     """Transpose a voxel on orthogonal plane to a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
@@ -240,7 +243,7 @@ class AxialPlaneTranpose(Tranpose):
     _DIMS = (C.AXIAL_DIM, )
 
 @register_as_serializable
-class Scale(TripleAugmentation):
+class Scale(DualAugmentation):
     """Randomly scale a voxel.
     """
     def __init__(
@@ -301,7 +304,7 @@ class Scale(TripleAugmentation):
         return FG.scale(points, scale)
 
 @register_as_serializable
-class AxialPlaneAffine(TripleAugmentation):
+class AxialPlaneAffine(DualAugmentation):
     """Randomly deform axial planes of a voxel.
     """
     def __init__(
@@ -388,7 +391,7 @@ class AxialPlaneScale(AxialPlaneAffine):
     """
     def __init__(
             self,
-            scale_limit=0.05,
+            scale_limit=0.1,
             border_mode=E.BorderType.DEFAULT,
             interpolation=E.InterType.DEFAULT,
             fill_value=0,
@@ -794,6 +797,9 @@ class GridDistort(DualAugmentation):
     def apply_to_mask(self, mask, distorted_grid, **params):
         return FV.distort(mask, distorted_grid, self.mask_interpolation)
 
+    def apply_to_points(self, points, distorted_grid, **data):
+        raise NotImplemented()
+
 @register_as_serializable
 class ElasticDistort(DualAugmentation):
     """Randomly elastic distort a voxel.
@@ -846,6 +852,9 @@ class ElasticDistort(DualAugmentation):
 
     def apply_to_mask(self, mask, distorted_grid, **params):
         return FV.distort(mask, distorted_grid, self.mask_interpolation)
+
+    def apply_to_points(self, points, distorted_grid, **data):
+        raise NotImplemented()
 
 @register_as_serializable
 class PlaneDropout(VoxelOnlyAugmentation):

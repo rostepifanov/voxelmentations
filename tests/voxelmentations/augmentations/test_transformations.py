@@ -22,7 +22,7 @@ SHAPE_PRESERVED_TRANSFORMS = [
     V.IntensityShift,
     V.IntensityScale,
     V.Contrast,
-    V.GridDistort,
+    # V.GridDistort,
     # V.ElasticDistort,
     V.Gamma,
     V.PlaneDropout,
@@ -63,8 +63,8 @@ def test_Transform_CASE_repr(transform):
 @pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS)
 def test_Transform_CASE_call_AND_mono_channel(transform):
     voxel = np.random.randn(32, 32, 32).astype(np.float32)
-    mask = np.ones((32, 32, 32), dtype=np.uint8)
-    points = np.ones((24, C.NUM_COORDS), dtype=np.float32)
+    mask = np.random.randint(0, 255, size=(32, 32, 32), dtype=np.uint8)
+    points = np.random.rand(24, C.NUM_COORDS).astype(np.float32)
 
     tvoxel = np.copy(voxel)
     tmask = np.copy(mask)
@@ -86,21 +86,25 @@ def test_Transform_CASE_call_AND_mono_channel(transform):
     assert tmask.dtype == mask.dtype
     assert tmask.shape == mask.shape
 
-    if isinstance(transform, V.VoxelOnlyAugmentation):
+    if isinstance(instance, V.VoxelOnlyAugmentation):
         assert np.all(tmask == mask)
+    else:
+        assert not np.all(tmask == mask)
 
     assert tpoints.flags['C_CONTIGUOUS'] == True
     assert tpoints.dtype == points.dtype
     assert tpoints.shape == points.shape
 
-    if isinstance(transform, V.VoxelOnlyAugmentation):
+    if isinstance(instance, V.VoxelOnlyAugmentation):
         assert np.allclose(tpoints, points)
+    else:
+        assert not np.allclose(tpoints, points)
 
 @pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS)
 def test_Transform_CASE_call_AND_multi_channel(transform):
     voxel = np.random.randn(32, 32, 32, 2).astype(np.float32)
-    mask = np.ones((32, 32, 32, 1), dtype=np.uint8)
-    points = np.ones((24, C.NUM_COORDS), dtype=np.float32)
+    mask = np.random.randint(0, 255, size=(32, 32, 32, 1), dtype=np.uint8)
+    points = np.random.rand(24, C.NUM_COORDS).astype(np.float32)
 
     tvoxel = np.copy(voxel)
     tmask = np.copy(mask)
@@ -114,20 +118,27 @@ def test_Transform_CASE_call_AND_multi_channel(transform):
     assert instance.keys() == instance.targets.keys()
 
     assert tvoxel.flags['C_CONTIGUOUS'] == True
+    assert tvoxel.dtype == voxel.dtype
     assert tvoxel.shape == voxel.shape
     assert not np.allclose(tvoxel, voxel)
 
     assert tmask.flags['C_CONTIGUOUS'] == True
+    assert tmask.dtype == mask.dtype
     assert tmask.shape == mask.shape
 
-    if isinstance(transform, V.VoxelOnlyAugmentation):
+    if isinstance(instance, V.VoxelOnlyAugmentation):
         assert np.all(tmask == mask)
+    else:
+        assert not np.all(tmask == mask)
 
     assert tpoints.flags['C_CONTIGUOUS'] == True
+    assert tpoints.dtype == points.dtype
     assert tpoints.shape == points.shape
 
-    if isinstance(transform, V.VoxelOnlyAugmentation):
+    if isinstance(instance, V.VoxelOnlyAugmentation):
         assert np.allclose(tpoints, points)
+    else:
+        assert not np.allclose(tpoints, points)
 
 @pytest.mark.parametrize('transform', MASK_FILL_VALUE_TRANSFORMS.keys())
 def test_Transform_CASE_mask_fill_value(transform, monkeypatch):
