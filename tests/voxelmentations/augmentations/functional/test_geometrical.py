@@ -8,6 +8,28 @@ import voxelmentations.core.constants as C
 from voxelmentations.augmentations.functional import FV, FG
 
 @pytest.mark.functional
+def test_pad_CASE_default():
+    input = np.array([
+        [1, 2, 3, 1],
+        [3, 5, 2, 1],
+    ])
+
+    expected = np.array([
+        [2, 4, 6, 1],
+        [4, 7, 5, 1],
+    ])
+
+    pads = (
+        (1, -1),
+        (2, -2),
+        (3, -3),
+    )
+
+    output = FG.pad(input, pads)
+
+    assert np.allclose(output, expected)
+
+@pytest.mark.functional
 def test_flip_CASE_inside_points():
     input = np.array([
         [1, 2, 3, 1],

@@ -126,7 +126,7 @@ class PadIfNeeded(DualAugmentation):
         return FV.pad(mask, pads, self.border_mode, self.mask_fill_value)
 
     def apply_to_points(self, points, pads, **data):
-        raise NotImplemented()
+        raise FG.pad(points, pads)
 
 @register_as_serializable
 class Flip(DualAugmentation):

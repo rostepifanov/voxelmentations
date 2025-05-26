@@ -3,6 +3,12 @@ import numpy as np
 import voxelmentations.core.constants as C
 import voxelmentations.augmentations.utils.geometrical as G
 
+def pad(points, pads):
+    pads = (*pads, (0, 0))
+    points = points + np.array([x for x, _ in pads])
+
+    return points
+
 def flip(points, dims, shape):
     points = np.copy(points)
 
