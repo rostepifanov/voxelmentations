@@ -70,7 +70,7 @@ def transpose(voxel, dims):
 
     return np.require(voxel, requirements=['C_CONTIGUOUS'])
 
-def scale(voxel, scale, interpolation, border_mode, fill_value):
+def affine(voxel, scale, shift, interpolation, border_mode, fill_value):
     """Apply scale transformations to volume
 
         :NOTE:
@@ -84,16 +84,13 @@ def scale(voxel, scale, interpolation, border_mode, fill_value):
             Thus, M = inv(M') and offset = inv(M') @ offset',
             where M and offset are args of affine_transform.
 
-            Some confusions of offset:
-                OpenCV center is calculated by (size - 1) / 2 (float)
-                Scipy center is calculated by (size - 1) // 2 (integer)
-
-            Despite the OpenCV and Scipy transformations are equal for scaling,
-            probably the Scipy offset calculation may has a bug.
+            M has the shape of 3x3.
 
         :args:
-            scale: float
+            scale: (float, float, float)
                 scaling factor in range from 0 to 1
+            shift: float or (float, float, float)
+                translation factor in range from 0 to 1
             interpolation: InterType
                 interpolation mode
             border_mode: BorderType
@@ -104,14 +101,22 @@ def scale(voxel, scale, interpolation, border_mode, fill_value):
     shape = voxel.shape[:C.NUM_SPATIAL_DIMENSIONS]
     shape = np.array(shape)
 
-    T = G.get_volumetric_scaling_matrix(scale)
+    shift = (shape * shift)
+    point = (shape - 1) / 2
 
-    point = np.array([ (ishape - 1) // 2 for ishape in shape ] + [0])
-    offset = np.linalg.inv(T) @ point
+    S = G.get_volumetric_scaling_matrix(scale)
+    invS = np.linalg.inv(S)
+
+    dS = S.diagonal()
+
+    point = np.array([*point, 0])
+    shift = np.array([*shift, 0])
+
+    offset = point - (point + shift) / dS
 
     voxel = sc.ndimage.affine_transform(
         voxel,
-        np.linalg.inv(T),
+        invS,
         offset=offset,
         order=C.MAP_INTER_TO_SC[interpolation],
         mode=C.MAP_BORDER_TYPE_TO_SC[border_mode],
@@ -137,9 +142,9 @@ def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_va
             than plane center in OpenCV has coordinates equal to (height - 1) / 2, (width - 1) / 2.
 
         :args:
-            scale: float
+            scale: (float, float)
                 scaling factor in range from 0 to 1
-            shift: float
+            shift: float or (float, float)
                 translation factor in range from 0 to 1
             angle: float
                 angle of rotation in range from 0 to 180

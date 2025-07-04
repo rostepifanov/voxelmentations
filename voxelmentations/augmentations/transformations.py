@@ -243,7 +243,83 @@ class AxialPlaneTranpose(Tranpose):
     _DIMS = (C.AXIAL_DIM, )
 
 @register_as_serializable
-class Scale(DualAugmentation):
+class Affine(DualAugmentation):
+    """Randomly deform a voxel.
+    """
+    def __init__(
+            self,
+            scale_limit=0.05,
+            shift_limit=0.05,
+            border_mode=E.BorderType.DEFAULT,
+            interpolation=E.InterType.DEFAULT,
+            fill_value=0,
+            mask_fill_value=0,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                scale_limit: float
+                    limit of scaling
+                shift_limit: float
+                    limit of translation as ratio of size
+                border_mode: BorderType
+                    border mode
+                interpolation: InterType
+                    interpolation mode
+                fill_value: float
+                    padding value of voxel if border_mode is BorderType.CONSTANT
+                mask_fill_value: int or None
+                    padding value if border_mode is BorderType.CONSTANT. if value is None, mask is not affected
+        """
+        super(Affine, self).__init__(always_apply, p)
+
+        self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
+        self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
+
+        self.border_mode = border_mode
+        self.interpolation = interpolation
+        self.mask_interpolation = E.InterType.NEAREST
+
+        self.fill_value = M.prepare_float(fill_value, 'fill_value')
+        self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
+
+    def get_augmentation_init_args_names(self):
+        return (
+            'scale_limit',
+            'shift_limit',
+            'border_mode',
+            'interpolation',
+            'fill_value',
+            'mask_fill_value'
+        )
+
+    def get_params(self):
+        scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
+        shift = (2 * np.random.random(C.NUM_SPATIAL_DIMENSIONS) - 1) * self.shift_limit
+
+        return {'scale': (scale, scale, scale), 'shift': shift}
+
+    @property
+    def targets_as_params(self):
+        return ['voxel']
+
+    def get_params_dependent_on_targets(self, params):
+        shape = params['voxel'].shape[:C.NUM_SPATIAL_DIMENSIONS]
+
+        return {'shape': shape}
+
+    def apply(self, voxel, scale, shift, **params):
+        return FV.affine(voxel, scale, shift, self.interpolation, self.border_mode, self.fill_value)
+
+    def apply_to_mask(self, mask, scale, shift, **params):
+        return FV.affine(mask, scale, shift, self.mask_interpolation, self.border_mode, self.mask_fill_value)
+
+    def apply_to_points(self, points, scale, shift, shape, **params):
+        return FG.affine(points, scale, shift, shape)
+
+@register_as_serializable
+class Scale(Affine):
     """Randomly scale a voxel.
     """
     def __init__(
@@ -269,16 +345,7 @@ class Scale(DualAugmentation):
                 mask_fill_value: int or None
                     padding value if border_mode is BorderType.CONSTANT. if value is None, mask is not affected
         """
-        super(Scale, self).__init__(always_apply, p)
-
-        self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
-
-        self.border_mode = border_mode
-        self.interpolation = interpolation
-        self.mask_interpolation = E.InterType.NEAREST
-
-        self.fill_value = M.prepare_float(fill_value, 'fill_value')
-        self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
+        super(Scale, self).__init__(scale_limit, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (
@@ -288,20 +355,6 @@ class Scale(DualAugmentation):
             'fill_value',
             'mask_fill_value'
         )
-
-    def get_params(self):
-        scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
-
-        return {'scale': (scale, scale, scale)}
-
-    def apply(self, voxel, scale, **params):
-        return FV.scale(voxel, scale, self.interpolation, self.border_mode, self.fill_value)
-
-    def apply_to_mask(self, mask, scale, **params):
-        return FV.scale(mask, scale, self.mask_interpolation, self.border_mode, self.mask_fill_value)
-
-    def apply_to_points(self, points, scale, **params):
-        return FG.scale(points, scale)
 
 @register_as_serializable
 class AxialPlaneAffine(DualAugmentation):

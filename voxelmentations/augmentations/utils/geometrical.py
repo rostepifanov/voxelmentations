@@ -36,6 +36,13 @@ def get_volumetric_translation_matrix(shifts):
 
     return M
 
+def get_volumetric_affine_matrix(scales, shiftes):
+    T1 = get_volumetric_scaling_matrix(scales)
+
+    T4 = get_volumetric_translation_matrix(shiftes)
+
+    return T4 @ T1
+
 def get_planar_scaling_matrix(scales):
     """Get 3x3 scaling matrix for planar transformation
 
