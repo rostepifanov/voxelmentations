@@ -315,7 +315,7 @@ def test_plane_scale_CASE_twice_isotropic_upscaling():
     assert np.allclose(output, expected)
 
 @pytest.mark.functional
-def test_plane_affine_CASE_only_shift():
+def test_plane_affine_CASE_only_translation():
     input = np.expand_dims(
         np.array([
             [ 1,  2,  3,  4],
@@ -358,7 +358,7 @@ def test_plane_affine_CASE_only_shift():
     assert np.allclose(output, expected)
 
 @pytest.mark.functional
-def test_plane_affine_CASE_rotation_AND_shift():
+def test_plane_affine_CASE_rotation_AND_translation():
     input = np.expand_dims(
         np.array([
             [ 1,  2,  3,  4],
@@ -371,10 +371,10 @@ def test_plane_affine_CASE_rotation_AND_shift():
 
     expected = np.expand_dims(
         np.array([
-            [  0, 0, 0, 0 ],
-            [  9, 5, 1, 0 ],
-            [ 10, 6, 2, 0 ],
-            [ 11, 7, 3, 0 ],
+            [ 0,  0,  0, 0 ],
+            [ 0, 13,  9, 5 ],
+            [ 0, 14, 10, 6 ],
+            [ 0, 15, 11, 7 ],
         ]),
         axis=(2, 3),
     )

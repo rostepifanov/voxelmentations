@@ -1,23 +1,5 @@
 import numpy as np
 
-def get_volumetric_translation_matrix(shifts):
-    """Get 4x4 translation matrix for volumetric transformation
-
-        :args:
-            shifts: (float, float, float)
-                shifts in pixels
-    """
-    xshift, yshift, zshift = shifts
-
-    M = np.array([
-        [ 1., 0., 0., xshift ],
-        [ 0., 1., 0., yshift ],
-        [ 0., 0., 1., zshift ],
-        [ 0., 0., 0.,     1. ],
-    ])
-
-    return M
-
 def get_volumetric_scaling_matrix(scales):
     """Get 4x4 scaling matrix for volumetric transformation
 
@@ -36,36 +18,20 @@ def get_volumetric_scaling_matrix(scales):
 
     return M
 
-def get_planar_rotation_matrix(angle):
-    """Get 3x3 clockwise rotation matrix for planar transformation
+def get_volumetric_translation_matrix(shifts):
+    """Get 4x4 translation matrix for volumetric transformation
 
         :args:
-            angle: float
-                angle in degrees
-    """
-    angle = np.deg2rad(angle)
-
-    M = np.array([
-        [ np.cos(angle), -np.sin(angle), 0. ],
-        [ np.sin(angle),  np.cos(angle), 0. ],
-        [            0.,             0., 1. ],
-    ])
-
-    return M
-
-def get_planar_translation_matrix(shifts):
-    """Get 3x3 translation matrix for planar transformation
-
-        :args:
-            shifts: (float, float)
+            shifts: (float, float, float)
                 shifts in pixels
     """
-    xshift, yshift = shifts
+    xshift, yshift, zshift = shifts
 
     M = np.array([
-        [ 1., 0., xshift ],
-        [ 0., 1., yshift ],
-        [ 0., 0.,     1. ],
+        [ 1., 0., 0., xshift ],
+        [ 0., 1., 0., yshift ],
+        [ 0., 0., 1., zshift ],
+        [ 0., 0., 0.,     1. ],
     ])
 
     return M
@@ -106,10 +72,44 @@ def get_planar_shear_matrix(shears):
 
     return M
 
+def get_planar_rotation_matrix(angle):
+    """Get 3x3 clockwise rotation matrix for planar transformation
+
+        :args:
+            angle: float
+                angle in degrees
+    """
+    angle = np.deg2rad(angle)
+
+    M = np.array([
+        [ np.cos(angle), -np.sin(angle), 0. ],
+        [ np.sin(angle),  np.cos(angle), 0. ],
+        [            0.,             0., 1. ],
+    ])
+
+    return M
+
+def get_planar_translation_matrix(shifts):
+    """Get 3x3 translation matrix for planar transformation
+
+        :args:
+            shifts: (float, float)
+                shifts in pixels
+    """
+    xshift, yshift = shifts
+
+    M = np.array([
+        [ 1., 0., xshift ],
+        [ 0., 1., yshift ],
+        [ 0., 0.,     1. ],
+    ])
+
+    return M
+
 def get_planar_affine_matrix(scales, shiftes, angle):
     T1 = get_planar_scaling_matrix(scales)
 
-    T3 = get_planar_translation_matrix(shiftes)
-    T4 = get_planar_rotation_matrix(angle)
+    T3 = get_planar_rotation_matrix(angle)
+    T4 = get_planar_translation_matrix(shiftes)
 
     return T4 @ T3 @ T1
