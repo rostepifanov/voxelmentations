@@ -20,9 +20,9 @@ def test_pad_CASE_default():
     ])
 
     pads = (
-        (1, -1),
-        (2, -2),
-        (3, -3),
+        (1, 4),
+        (2, 5),
+        (3, 6),
     )
 
     output = FG.pad(input, pads)
