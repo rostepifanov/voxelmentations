@@ -357,6 +357,44 @@ class Scale(Affine):
         )
 
 @register_as_serializable
+class Translate(Affine):
+    """Randomly translate a voxel.
+    """
+    def __init__(
+            self,
+            shift_limit=0.05,
+            border_mode=E.BorderType.DEFAULT,
+            interpolation=E.InterType.DEFAULT,
+            fill_value=0,
+            mask_fill_value=0,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                shift_limit: float
+                    limit of translation as ratio of size
+                border_mode: BorderType
+                    border mode
+                interpolation: InterType
+                    interpolation mode
+                fill_value: float
+                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
+                mask_fill_value: int or None
+                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
+        """
+        super(Translate, self).__init__(0, shift_limit, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+
+    def get_augmentation_init_args_names(self):
+        return (
+            'shift_limit',
+            'border_mode',
+            'interpolation',
+            'fill_value',
+            'mask_fill_value'
+        )
+
+@register_as_serializable
 class AxialPlaneAffine(DualAugmentation):
     """Randomly deform axial planes of a voxel.
     """
@@ -477,44 +515,6 @@ class AxialPlaneScale(AxialPlaneAffine):
         )
 
 @register_as_serializable
-class AxialPlaneTranslate(AxialPlaneAffine):
-    """Randomly translate axial planes of a voxel.
-    """
-    def __init__(
-            self,
-            shift_limit=0.05,
-            border_mode=E.BorderType.DEFAULT,
-            interpolation=E.InterType.DEFAULT,
-            fill_value=0,
-            mask_fill_value=0,
-            always_apply=False,
-            p=0.5,
-        ):
-        """
-            :args:
-                shift_limit: float
-                    limit of translation as ratio of size
-                border_mode: BorderType
-                    border mode
-                interpolation: InterType
-                    interpolation mode
-                fill_value: float
-                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
-                mask_fill_value: int or None
-                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
-        """
-        super(AxialPlaneTranslate, self).__init__(0, shift_limit, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
-
-    def get_augmentation_init_args_names(self):
-        return (
-            'shift_limit',
-            'border_mode',
-            'interpolation',
-            'fill_value',
-            'mask_fill_value'
-        )
-
-@register_as_serializable
 class AxialPlaneRotate(AxialPlaneAffine):
     """Randomly rotate axial planes of a voxel.
     """
@@ -546,6 +546,44 @@ class AxialPlaneRotate(AxialPlaneAffine):
     def get_augmentation_init_args_names(self):
         return (
             'angle_limit',
+            'border_mode',
+            'interpolation',
+            'fill_value',
+            'mask_fill_value'
+        )
+
+@register_as_serializable
+class AxialPlaneTranslate(AxialPlaneAffine):
+    """Randomly translate axial planes of a voxel.
+    """
+    def __init__(
+            self,
+            shift_limit=0.05,
+            border_mode=E.BorderType.DEFAULT,
+            interpolation=E.InterType.DEFAULT,
+            fill_value=0,
+            mask_fill_value=0,
+            always_apply=False,
+            p=0.5,
+        ):
+        """
+            :args:
+                shift_limit: float
+                    limit of translation as ratio of size
+                border_mode: BorderType
+                    border mode
+                interpolation: InterType
+                    interpolation mode
+                fill_value: float
+                    padding value of voxel if border_mode is cv2.BORDER_CONSTANT
+                mask_fill_value: int or None
+                    padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
+        """
+        super(AxialPlaneTranslate, self).__init__(0, shift_limit, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+
+    def get_augmentation_init_args_names(self):
+        return (
+            'shift_limit',
             'border_mode',
             'interpolation',
             'fill_value',

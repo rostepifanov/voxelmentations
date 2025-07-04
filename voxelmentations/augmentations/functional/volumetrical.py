@@ -105,12 +105,15 @@ def affine(voxel, scale, shift, interpolation, border_mode, fill_value):
     point = (shape - 1) / 2
 
     S = G.get_volumetric_scaling_matrix(scale)
+
+    if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
+        point = np.array([*point, 0])
+        shift = np.array([*shift, 0])
+    else:
+        S = S[:C.NUM_SPATIAL_DIMENSIONS, :C.NUM_SPATIAL_DIMENSIONS]
+
     invS = np.linalg.inv(S)
-
     dS = S.diagonal()
-
-    point = np.array([*point, 0])
-    shift = np.array([*shift, 0])
 
     offset = point - (point + shift) / dS
 
