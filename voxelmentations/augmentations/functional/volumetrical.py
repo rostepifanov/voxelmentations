@@ -87,10 +87,10 @@ def affine(voxel, scale, shift, interpolation, border_mode, fill_value):
             Matrix M encodes the scaling and rotation,
             while the vector offset encodes the translation.
 
-            All dimensions beyond C.NUM_SPATIAL_DIMENSIONS
+            Dimension beyond C.NUM_SPATIAL_DIMENSIONS
             should be modified using the identity transformation.
 
-            In the case where the number of dimensions is equal to C.NUM_SPATIAL_DIMENSIONS,
+            In the case where the number of dimensions is equal to C.NUM_MULTI_CHANNEL_DIMENSIONS,
             the value 1 in the 4×4 matrix S represents the identity transformation,
             not a homogeneous coordinate — despite the similar notation.
 
