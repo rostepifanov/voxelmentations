@@ -84,7 +84,15 @@ def affine(voxel, scale, shift, interpolation, border_mode, fill_value):
             Thus, M = inv(M') and offset = inv(M') @ offset',
             where M and offset are args of affine_transform.
 
-            M has the shape of 3x3.
+            Matrix M encodes the scaling and rotation,
+            while the vector offset encodes the translation.
+
+            All dimensions beyond C.NUM_SPATIAL_DIMENSIONS
+            should be modified using the identity transformation.
+
+            In the case where the number of dimensions is equal to C.NUM_SPATIAL_DIMENSIONS,
+            the value 1 in the 4×4 matrix S represents the identity transformation,
+            not a homogeneous coordinate — despite the similar notation.
 
         :args:
             scale: (float, float, float)
