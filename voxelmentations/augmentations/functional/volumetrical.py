@@ -137,7 +137,7 @@ def affine(voxel, scale, shift, interpolation, border_mode, fill_value):
     return voxel
 
 @D.preserve_channel_dim
-def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_value, dim):
+def plane_affine(voxel, scale, angle, shear, shift, interpolation, border_mode, fill_value, dim):
     """Apply affine transformations to plane orthogonal to the dim
 
         :NOTE:
@@ -155,10 +155,12 @@ def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_va
         :args:
             scale: (float, float)
                 scaling factor in range from 0 to 1
-            shift: float or (float, float)
-                translation factor in range from 0 to 1
             angle: float
                 angle of rotation in range from 0 to 180
+            shear: (float, float)
+                shear factor in range from 0 to 180
+            shift: float or (float, float)
+                translation factor in range from 0 to 1
             interpolation: InterType
                 interpolation mode
             border_mode: BorderType
@@ -176,7 +178,7 @@ def plane_affine(voxel, scale, shift, angle, interpolation, border_mode, fill_va
     point = (shape - 1) / 2
 
     K = G.get_planar_translation_matrix(point)
-    T = G.get_planar_affine_matrix(scale, shift, angle)
+    T = G.get_planar_affine_matrix(scale, angle, shear, shift)
 
     M = K @ T @ np.linalg.inv(K)
     M = M[:2]

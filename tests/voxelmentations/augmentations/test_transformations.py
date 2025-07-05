@@ -42,7 +42,7 @@ SHAPE_UNPRESERVED_TRANSFORMS = [
 
 MASK_FILL_VALUE_TRANSFORMS = {
     V.PadIfNeeded: {'pads': ((1, 1), (1, 1), (1, 1))},
-    V.AxialPlaneAffine: {'angle': 5., 'shift': 0., 'scale': (0.95, 0.95)},
+    V.AxialPlaneAffine: {'scale': (0.95, 0.95), 'angle': 5., 'shear': (0., 0.), 'shift': 0.},
 }
 
 @pytest.fixture(scope='function', autouse=True)
@@ -51,7 +51,7 @@ def seed():
 
 @pytest.fixture(scope='function', autouse=True)
 def random(monkeypatch):
-    monkeypatch.setattr(np.random, 'random', lambda size=None: 0.25)
+    monkeypatch.setattr(np.random, 'random', lambda size=None: np.array([0.25] * size) if size else 0.25)
 
 @pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS + SHAPE_UNPRESERVED_TRANSFORMS)
 def test_Transform_CASE_repr(transform):

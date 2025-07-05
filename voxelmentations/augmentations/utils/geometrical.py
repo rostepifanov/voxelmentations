@@ -36,7 +36,7 @@ def get_volumetric_translation_matrix(shifts):
 
     return M
 
-def get_volumetric_affine_matrix(scales, shiftes):
+def get_volumetric_affine_matrix(scales, angles, shears, shiftes):
     T1 = get_volumetric_scaling_matrix(scales)
 
     T4 = get_volumetric_translation_matrix(shiftes)
@@ -113,10 +113,10 @@ def get_planar_translation_matrix(shifts):
 
     return M
 
-def get_planar_affine_matrix(scales, shiftes, angle):
+def get_planar_affine_matrix(scales, angle, shears, shiftes):
     T1 = get_planar_scaling_matrix(scales)
-
-    T3 = get_planar_rotation_matrix(angle)
+    T2 = get_planar_rotation_matrix(angle)
+    T3 = get_planar_shear_matrix(shears)
     T4 = get_planar_translation_matrix(shiftes)
 
-    return T4 @ T3 @ T1
+    return T4 @ T3 @ T2 @ T1

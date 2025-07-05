@@ -317,16 +317,18 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
     ])
 
     scale = (1., 1.)
-    shift = 0.
     angle = 90
+    shear = (0., 0.)
+    shift = 0.
     dim = C.AXIAL_DIM
     shape = (4, 4, 1, 1)
 
     output = FG.plane_affine(
         input,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -350,8 +352,9 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape_AND_align_with_ma
     )
 
     scale = (1., 1.)
-    shift = 0.
     angle = 90
+    shear = (0., 0.)
+    shift = 0.
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -361,8 +364,9 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape_AND_align_with_ma
     tpoints = FG.plane_affine(
         points,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -370,8 +374,9 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape_AND_align_with_ma
     tmask = FV.plane_affine(
         mask,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,
@@ -396,16 +401,18 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
     ])
 
     scale = (1., 1.)
-    shift = 0.
     angle = 90.
+    shear = (0., 0.)
+    shift = 0.
     dim = C.AXIAL_DIM
     shape = (4, 2, 1, 1)
 
     output = FG.plane_affine(
         input,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -429,8 +436,9 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape_AND_align_with
     )
 
     scale = (1., 1.)
-    shift = 0.
     angle = 90.
+    shear = (0., 0.)
+    shift = 0.
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -440,8 +448,9 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape_AND_align_with
     tpoints = FG.plane_affine(
         points,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -449,8 +458,9 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape_AND_align_with
     tmask = FV.plane_affine(
         mask,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,
@@ -477,16 +487,18 @@ def test_plane_scale_CASE_twice_isotropic_upscaling():
     ])
 
     scale = (2., 2.)
-    shift = 0.
     angle = 0.
+    shear = (0., 0.)
+    shift = 0.
     dim = C.AXIAL_DIM
     shape = (4, 4, 1, 1)
 
     output = FG.plane_affine(
         input,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -510,8 +522,9 @@ def test_plane_scale_CASE_twice_isotropic_upscaling_AND_align_with_mask():
     )
 
     scale = (2., 2.)
-    shift = 0.
     angle = 0.
+    shear = (0., 0.)
+    shift = 0.
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -521,8 +534,9 @@ def test_plane_scale_CASE_twice_isotropic_upscaling_AND_align_with_mask():
     tpoints = FG.plane_affine(
         points,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -530,8 +544,9 @@ def test_plane_scale_CASE_twice_isotropic_upscaling_AND_align_with_mask():
     tmask = FV.plane_affine(
         mask,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,
@@ -558,8 +573,9 @@ def test_plane_scale_CASE_twice_isotropic_downscaling_AND_align_with_mask():
     )
 
     scale = (0.5, 0.5)
-    shift = 0.
     angle = 0.
+    shear = (0., 0.)
+    shift = 0.
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -569,8 +585,9 @@ def test_plane_scale_CASE_twice_isotropic_downscaling_AND_align_with_mask():
     tpoints = FG.plane_affine(
         points,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -578,8 +595,9 @@ def test_plane_scale_CASE_twice_isotropic_downscaling_AND_align_with_mask():
     tmask = FV.plane_affine(
         mask,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,
@@ -606,17 +624,19 @@ def test_plane_affine_CASE_only_shift():
         [ 3.5, 2.5, 0.5, 1.0],
     ])
 
-    angle = 0
-    shift = 0.25
     scale = (1., 1.)
+    angle = 0
+    shear = (0., 0.)
+    shift = 0.25
     dim = C.AXIAL_DIM
     shape = (4, 4, 1, 1)
 
     output = FG.plane_affine(
         input,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -639,9 +659,10 @@ def test_plane_affine_CASE_only_shift_AND_align_with_mask():
         axis=(2, 3),
     )
 
-    angle = 0
-    shift = 0.25
     scale = (1., 1.)
+    angle = 0
+    shear = (0., 0.)
+    shift = 0.25
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -651,8 +672,9 @@ def test_plane_affine_CASE_only_shift_AND_align_with_mask():
     tpoints = FG.plane_affine(
         points,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -660,8 +682,9 @@ def test_plane_affine_CASE_only_shift_AND_align_with_mask():
     tmask = FV.plane_affine(
         mask,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,
@@ -688,17 +711,19 @@ def test_plane_affine_CASE_only_anisotropic_shift():
         [ 3.5, 3.5, 0.5, 1.0],
     ])
 
-    angle = 0
-    shift = (0.25, 0.5)
     scale = (1., 1.)
+    angle = 0
+    shear = (0., 0.)
+    shift = (0.25, 0.5)
     dim = C.AXIAL_DIM
     shape = (4, 4, 1, 1)
 
     output = FG.plane_affine(
         input,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -721,9 +746,10 @@ def test_plane_affine_CASE_only_anisotropic_shift_AND_align_with_mask():
         axis=(2, 3),
     )
 
-    angle = 0
-    shift = (0.25, 0.5)
     scale = (1., 1.)
+    angle = 0
+    shear = (0., 0.)
+    shift = (0.25, 0.5)
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -733,8 +759,9 @@ def test_plane_affine_CASE_only_anisotropic_shift_AND_align_with_mask():
     tpoints = FG.plane_affine(
         points,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         dim,
         shape,
     )
@@ -742,8 +769,9 @@ def test_plane_affine_CASE_only_anisotropic_shift_AND_align_with_mask():
     tmask = FV.plane_affine(
         mask,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,

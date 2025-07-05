@@ -401,8 +401,9 @@ class AxialPlaneAffine(DualAugmentation):
     def __init__(
             self,
             scale_limit=0.05,
-            shift_limit=0.05,
             angle_limit=10,
+            shear_limit=10,
+            shift_limit=0.05,
             border_mode=E.BorderType.DEFAULT,
             interpolation=E.InterType.DEFAULT,
             fill_value=0,
@@ -414,10 +415,12 @@ class AxialPlaneAffine(DualAugmentation):
             :args:
                 scale_limit: float
                     limit of scaling
-                shift_limit: float
-                    limit of translation as ratio of size
                 angle_limit: float
                     limit of rotation in degrees [0, 180]
+                shear_limit: float
+                    limit of shearing in degrees [0, 180]
+                shift_limit: float
+                    limit of translation as ratio of size
                 border_mode: BorderType
                     border mode
                 interpolation: InterType
@@ -430,8 +433,9 @@ class AxialPlaneAffine(DualAugmentation):
         super(AxialPlaneAffine, self).__init__(always_apply, p)
 
         self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
-        self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
         self.angle_limit = 180 * M.prepare_inrange_zero_one_float(angle_limit / 180, 'angle_limit')
+        self.shear_limit = 180 * M.prepare_inrange_zero_one_float(shear_limit / 180, 'shear_limit')
+        self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
 
         self.border_mode = border_mode
         self.interpolation = interpolation
@@ -443,8 +447,9 @@ class AxialPlaneAffine(DualAugmentation):
     def get_augmentation_init_args_names(self):
         return (
             'scale_limit',
-            'shift_limit',
             'angle_limit',
+            'shear_limit',
+            'shift_limit',
             'border_mode',
             'interpolation',
             'fill_value',
@@ -453,10 +458,11 @@ class AxialPlaneAffine(DualAugmentation):
 
     def get_params(self):
         scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
-        shift = (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shift_limit
         angle = 180 * (2 * np.random.random() - 1) * self.angle_limit / 180
+        shear = 180 * (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shear_limit / 180
+        shift = (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shift_limit
 
-        return {'scale': (scale, scale), 'shift': shift, 'angle': angle}
+        return {'scale': (scale, scale), 'angle': angle, 'shear': shear, 'shift': shift}
 
     @property
     def targets_as_params(self):
@@ -467,14 +473,14 @@ class AxialPlaneAffine(DualAugmentation):
 
         return {'shape': shape}
 
-    def apply(self, voxel, scale, shift, angle, **params):
-        return FV.plane_affine(voxel, scale, shift, angle, self.interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
+    def apply(self, voxel, scale, angle, shear, shift, **params):
+        return FV.plane_affine(voxel, scale, angle, shear, shift, self.interpolation, self.border_mode, self.fill_value, C.AXIAL_DIM)
 
-    def apply_to_mask(self, mask, scale, shift, angle, **params):
-        return FV.plane_affine(mask, scale, shift, angle, self.mask_interpolation, self.border_mode, self.mask_fill_value, C.AXIAL_DIM)
+    def apply_to_mask(self, mask, scale, angle, shear, shift, **params):
+        return FV.plane_affine(mask, scale, angle, shear, shift, self.mask_interpolation, self.border_mode, self.mask_fill_value, C.AXIAL_DIM)
 
-    def apply_to_points(self, points, scale, shift, angle, shape, **params):
-        return FG.plane_affine(points, scale, shift, angle, C.AXIAL_DIM, shape)
+    def apply_to_points(self, points, scale, angle, shear, shift, shape, **params):
+        return FG.plane_affine(points, scale, angle, shear, shift, C.AXIAL_DIM, shape)
 
 @register_as_serializable
 class AxialPlaneScale(AxialPlaneAffine):
@@ -503,7 +509,7 @@ class AxialPlaneScale(AxialPlaneAffine):
                 mask_fill_value: int or None
                     padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
         """
-        super(AxialPlaneScale, self).__init__(scale_limit, 0, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+        super(AxialPlaneScale, self).__init__(scale_limit, 0, 0, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (
@@ -541,7 +547,7 @@ class AxialPlaneRotate(AxialPlaneAffine):
                 mask_fill_value: int or None
                     padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
         """
-        super(AxialPlaneRotate, self).__init__(0, 0, angle_limit, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+        super(AxialPlaneRotate, self).__init__(0, angle_limit, 0, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (
@@ -579,7 +585,7 @@ class AxialPlaneTranslate(AxialPlaneAffine):
                 mask_fill_value: int or None
                     padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
         """
-        super(AxialPlaneTranslate, self).__init__(0, shift_limit, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+        super(AxialPlaneTranslate, self).__init__(0, 0, 0, shift_limit, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (

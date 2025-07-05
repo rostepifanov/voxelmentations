@@ -120,6 +120,7 @@ def test_affine_CASE_planar_equal_to_volumetric_AND_scaling_AND_axial_dim_AND_ev
         input,
         planar_scale,
         0.,
+        (0., 0.),
         0.,
         interpolation,
         border_mode,
@@ -162,6 +163,7 @@ def test_affine_CASE_planar_equal_to_volumetric_AND_scaling_AND_axial_dim_AND_ev
         input,
         planar_scale,
         0.,
+        (0., 0.),
         0.,
         interpolation,
         border_mode,
@@ -205,6 +207,7 @@ def test_affine_CASE_planar_equal_to_volumetric_AND_scaling_AND_axial_dim_AND_od
         input,
         planar_scale,
         0.,
+        (0., 0.),
         0.,
         interpolation,
         border_mode,
@@ -255,6 +258,7 @@ def test_affine_CASE_planar_equal_to_volumetric_AND_scaling_AND_twice_isotropic_
         input,
         planar_scale,
         0.,
+        (0., 0.),
         0.,
         interpolation,
         border_mode,
@@ -266,6 +270,7 @@ def test_affine_CASE_planar_equal_to_volumetric_AND_scaling_AND_twice_isotropic_
         planar_output,
         (1., scale),
         0.,
+        (0., 0.),
         0.,
         interpolation,
         border_mode,
@@ -312,8 +317,9 @@ def test_affine_CASE_planar_equal_to_volumetric_AND_translation_AND_axial_dim():
     planar_output = FV.plane_affine(
         input,
         planar_scale,
-        planar_shift,
         0.,
+        (0., 0.),
+        planar_shift,
         interpolation,
         border_mode,
         fill_value,
@@ -345,8 +351,9 @@ def test_plane_affine_CASE_twice_isotropic_upscaling():
     )
 
     scale = (2., 2.)
-    shift = 0.
     angle = 0.
+    shear = (0., 0.)
+    shift = 0.
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -355,8 +362,9 @@ def test_plane_affine_CASE_twice_isotropic_upscaling():
     output = FV.plane_affine(
         input,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,
@@ -388,8 +396,9 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
     )
 
     scale = (1., 1.)
-    shift = 0.
     angle = 90
+    shear = (0., 0.)
+    shift = 0.
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -398,8 +407,9 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
     output = FV.plane_affine(
         input,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,
@@ -431,8 +441,9 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
     )
 
     scale = (1., 1.)
-    shift = 0.
     angle = 90.
+    shear = (0., 0.)
+    shift = 0.
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -441,8 +452,9 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
     output = FV.plane_affine(
         input,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,
@@ -473,9 +485,10 @@ def test_plane_affine_CASE_only_translation():
         axis=(2, 3),
     )
 
-    angle = 0
-    shift = 0.25
     scale = (1. ,1.)
+    angle = 0
+    shear = (0., 0.)
+    shift = 0.25
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -484,8 +497,9 @@ def test_plane_affine_CASE_only_translation():
     output = FV.plane_affine(
         input,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,
@@ -517,8 +531,9 @@ def test_plane_affine_CASE_rotation_AND_translation():
     )
 
     scale = (1., 1.)
-    shift = 0.25
     angle = 90.
+    shear = (0., 0.)
+    shift = 0.25
     interpolation = E.InterType.NEAREST
     border_mode = E.BorderType.CONSTANT
     fill_value = 0
@@ -527,8 +542,9 @@ def test_plane_affine_CASE_rotation_AND_translation():
     output = FV.plane_affine(
         input,
         scale,
-        shift,
         angle,
+        shear,
+        shift,
         interpolation,
         border_mode,
         fill_value,

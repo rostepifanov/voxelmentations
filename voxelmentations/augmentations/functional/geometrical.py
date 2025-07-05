@@ -52,7 +52,7 @@ def affine(points, scale, shift, shape):
     point = 0.5 * shape
 
     K = G.get_volumetric_translation_matrix(point)
-    T = G.get_volumetric_affine_matrix(scale, shift)
+    T = G.get_volumetric_affine_matrix(scale, (0, 0, 0), (0, 0, 0), shift)
 
     M = K @ T @ np.linalg.inv(K)
 
@@ -60,7 +60,7 @@ def affine(points, scale, shift, shape):
 
     return points
 
-def plane_affine(points, scale, shift, angle, dim, shape):
+def plane_affine(points, scale, angle, shear, shift, dim, shape):
     points = np.copy(points)
 
     shape = [*shape[:dim], *shape[dim+1:C.NUM_SPATIAL_DIMENSIONS]]
@@ -70,7 +70,7 @@ def plane_affine(points, scale, shift, angle, dim, shape):
     point = 0.5 * shape
 
     K = G.get_planar_translation_matrix(point)
-    T = G.get_planar_affine_matrix(scale, shift, -angle)
+    T = G.get_planar_affine_matrix(scale, -angle, shear, shift)
 
     M = K @ T @ np.linalg.inv(K)
 
