@@ -60,7 +60,7 @@ class PadIfNeeded(DualAugmentation):
             'position',
             'border_mode',
             'fill_value',
-            'mask_fill_value'
+            'mask_fill_value',
         )
 
     @property
@@ -254,6 +254,7 @@ class Affine(DualAugmentation):
             interpolation=E.InterType.DEFAULT,
             fill_value=0,
             mask_fill_value=0,
+            isotropic=True,
             always_apply=False,
             p=0.5,
         ):
@@ -271,6 +272,8 @@ class Affine(DualAugmentation):
                     padding value of voxel if border_mode is BorderType.CONSTANT
                 mask_fill_value: int or None
                     padding value if border_mode is BorderType.CONSTANT. if value is None, mask is not affected
+                isotropic: bool
+                    flag indicating whether the scale is isotropic or not
         """
         super(Affine, self).__init__(always_apply, p)
 
@@ -284,6 +287,8 @@ class Affine(DualAugmentation):
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
         self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
 
+        self.isotropic = isotropic
+
     def get_augmentation_init_args_names(self):
         return (
             'scale_limit',
@@ -291,14 +296,16 @@ class Affine(DualAugmentation):
             'border_mode',
             'interpolation',
             'fill_value',
-            'mask_fill_value'
+            'mask_fill_value',
+            'isotropic',
         )
 
     def get_params(self):
-        scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
+        scale = 1 + (2 * np.random.random(1 if self.isotropic else C.NUM_SPATIAL_DIMENSIONS) - 1) * self.scale_limit
+        scale = scale.repeat(C.NUM_SPATIAL_DIMENSIONS) if self.isotropic else scale
         shift = (2 * np.random.random(C.NUM_SPATIAL_DIMENSIONS) - 1) * self.shift_limit
 
-        return {'scale': (scale, scale, scale), 'shift': shift}
+        return {'scale': scale, 'shift': shift}
 
     @property
     def targets_as_params(self):
@@ -329,6 +336,7 @@ class Scale(Affine):
             interpolation=E.InterType.DEFAULT,
             fill_value=0,
             mask_fill_value=0,
+            isotropic=True,
             always_apply=False,
             p=0.5,
         ):
@@ -344,8 +352,10 @@ class Scale(Affine):
                     padding value of voxel if border_mode is BorderType.CONSTANT
                 mask_fill_value: int or None
                     padding value if border_mode is BorderType.CONSTANT. if value is None, mask is not affected
+                isotropic: bool
+                    flag indicating whether the scale is isotropic or not
         """
-        super(Scale, self).__init__(scale_limit, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+        super(Scale, self).__init__(scale_limit, 0, border_mode, interpolation, fill_value, mask_fill_value, isotropic, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (
@@ -353,7 +363,8 @@ class Scale(Affine):
             'border_mode',
             'interpolation',
             'fill_value',
-            'mask_fill_value'
+            'mask_fill_value',
+            'isotropic',
         )
 
 @register_as_serializable
@@ -383,7 +394,7 @@ class Translate(Affine):
                 mask_fill_value: int or None
                     padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
         """
-        super(Translate, self).__init__(0, shift_limit, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+        super(Translate, self).__init__(0, shift_limit, border_mode, interpolation, fill_value, mask_fill_value, True, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (
@@ -391,7 +402,7 @@ class Translate(Affine):
             'border_mode',
             'interpolation',
             'fill_value',
-            'mask_fill_value'
+            'mask_fill_value',
         )
 
 @register_as_serializable
@@ -408,6 +419,7 @@ class AxialPlaneAffine(DualAugmentation):
             interpolation=E.InterType.DEFAULT,
             fill_value=0,
             mask_fill_value=0,
+            isotropic=True,
             always_apply=False,
             p=0.5,
         ):
@@ -429,6 +441,8 @@ class AxialPlaneAffine(DualAugmentation):
                     padding value of voxel if border_mode is BorderType.CONSTANT
                 mask_fill_value: int or None
                     padding value if border_mode is BorderType.CONSTANT. if value is None, mask is not affected
+                isotropic: bool
+                    flag indicating whether the scale is isotropic or not
         """
         super(AxialPlaneAffine, self).__init__(always_apply, p)
 
@@ -444,6 +458,8 @@ class AxialPlaneAffine(DualAugmentation):
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
         self.mask_fill_value = M.prepare_float(mask_fill_value, 'mask_fill_value')
 
+        self.isotropic = isotropic
+
     def get_augmentation_init_args_names(self):
         return (
             'scale_limit',
@@ -453,16 +469,18 @@ class AxialPlaneAffine(DualAugmentation):
             'border_mode',
             'interpolation',
             'fill_value',
-            'mask_fill_value'
+            'mask_fill_value',
+            'isotropic',
         )
 
     def get_params(self):
-        scale = 1 + (2 * np.random.random() - 1) * self.scale_limit
+        scale = 1 + (2 * np.random.random(1 if self.isotropic else C.NUM_PLANAR_DIMENSIONS) - 1) * self.scale_limit
+        scale = scale.repeat(C.NUM_PLANAR_DIMENSIONS) if self.isotropic else scale
         angle = 180 * (2 * np.random.random() - 1) * self.angle_limit / 180
         shear = 180 * (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shear_limit / 180
         shift = (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shift_limit
 
-        return {'scale': (scale, scale), 'angle': angle, 'shear': shear, 'shift': shift}
+        return {'scale': scale, 'angle': angle, 'shear': shear, 'shift': shift}
 
     @property
     def targets_as_params(self):
@@ -493,6 +511,7 @@ class AxialPlaneScale(AxialPlaneAffine):
             interpolation=E.InterType.DEFAULT,
             fill_value=0,
             mask_fill_value=0,
+            isotropic=True,
             always_apply=False,
             p=0.5,
         ):
@@ -508,8 +527,10 @@ class AxialPlaneScale(AxialPlaneAffine):
                     padding value of voxel if border_mode is cv2.BORDER_CONSTANT
                 mask_fill_value: int or None
                     padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
+                isotropic: bool
+                    flag indicating whether the scale is isotropic or not
         """
-        super(AxialPlaneScale, self).__init__(scale_limit, 0, 0, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+        super(AxialPlaneScale, self).__init__(scale_limit, 0, 0, 0, border_mode, interpolation, fill_value, mask_fill_value, isotropic, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (
@@ -517,7 +538,8 @@ class AxialPlaneScale(AxialPlaneAffine):
             'border_mode',
             'interpolation',
             'fill_value',
-            'mask_fill_value'
+            'mask_fill_value',
+            'isotropic',
         )
 
 @register_as_serializable
@@ -547,7 +569,7 @@ class AxialPlaneRotate(AxialPlaneAffine):
                 mask_fill_value: int or None
                     padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
         """
-        super(AxialPlaneRotate, self).__init__(0, angle_limit, 0, 0, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+        super(AxialPlaneRotate, self).__init__(0, angle_limit, 0, 0, border_mode, interpolation, fill_value, mask_fill_value, True, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (
@@ -555,7 +577,7 @@ class AxialPlaneRotate(AxialPlaneAffine):
             'border_mode',
             'interpolation',
             'fill_value',
-            'mask_fill_value'
+            'mask_fill_value',
         )
 
 @register_as_serializable
@@ -585,7 +607,7 @@ class AxialPlaneTranslate(AxialPlaneAffine):
                 mask_fill_value: int or None
                     padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
         """
-        super(AxialPlaneTranslate, self).__init__(0, 0, 0, shift_limit, border_mode, interpolation, fill_value, mask_fill_value, always_apply, p)
+        super(AxialPlaneTranslate, self).__init__(0, 0, 0, shift_limit, border_mode, interpolation, fill_value, mask_fill_value, True, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (
@@ -593,7 +615,7 @@ class AxialPlaneTranslate(AxialPlaneAffine):
             'border_mode',
             'interpolation',
             'fill_value',
-            'mask_fill_value'
+            'mask_fill_value',
         )
 
 @register_as_serializable
@@ -1069,7 +1091,7 @@ class PatchDropout(VoxelOnlyAugmentation):
             'height_range',
             'width_range',
             'depth_range',
-            'fill_value'
+            'fill_value',
         )
 
     @property
@@ -1152,7 +1174,7 @@ class PatchShuffle(VoxelOnlyAugmentation):
             'npatches',
             'height_range',
             'width_range',
-            'depth_range'
+            'depth_range',
         )
 
     @property
