@@ -292,9 +292,8 @@ def test_affine_CASE_planar_equal_to_volumetric_AND_translation_AND_axial_dim():
         axis=(2, 3),
     )
 
-    scale = 1.
-    volumetric_scale = (scale, scale, scale)
-    planar_scale = (scale, scale)
+    volumetric_scale = (1., 1., 1.)
+    planar_scale = (1., 1.)
 
     xshift = 0.25
     yshift = 0.25
