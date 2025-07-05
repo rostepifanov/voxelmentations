@@ -20,6 +20,16 @@ def apply_along_dim(data, func, dim):
     return data
 
 def pad(voxel, pads, border_mode, fill_value):
+    """Pad voxel
+
+        :args:
+            pads: tuple of (int, int)
+                the size of padding for each dims
+            border_mode: BorderType
+                border mode
+            fill_value:
+                padding value if border_mode is BorderType.CONSTANT
+    """
     kwargs = dict()
 
     if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
@@ -159,7 +169,7 @@ def plane_affine(voxel, scale, angle, shear, shift, interpolation, border_mode, 
                 angle of rotation in range from 0 to 180
             shear: (float, float)
                 shear factor in range from 0 to 180
-            shift: float or (float, float)
+            shift: (float, float)
                 translation factor in range from 0 to 1
             interpolation: InterType
                 interpolation mode
