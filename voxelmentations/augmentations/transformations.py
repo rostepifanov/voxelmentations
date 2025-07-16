@@ -317,10 +317,10 @@ class Affine(DualAugmentation):
         return {'shape': shape}
 
     def apply(self, voxel, scale, shift, **params):
-        return FV.affine(voxel, scale, shift, self.interpolation, self.border_mode, self.fill_value)
+        return FV.affine(voxel, scale, (0, 0, 0), shift, self.interpolation, self.border_mode, self.fill_value)
 
     def apply_to_mask(self, mask, scale, shift, **params):
-        return FV.affine(mask, scale, shift, self.mask_interpolation, self.border_mode, self.mask_fill_value)
+        return FV.affine(mask, scale, (0, 0, 0), shift, self.mask_interpolation, self.border_mode, self.mask_fill_value)
 
     def apply_to_points(self, points, scale, shift, shape, **params):
         return FG.affine(points, scale, shift, shape)

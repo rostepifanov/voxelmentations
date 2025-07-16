@@ -312,8 +312,8 @@ def test_plane_affine_CASE_90_degree_rotation_AND_square_shape():
     ])
 
     expected = np.array([
-        [0.5, 3.5, 0.5, 1.0],
-        [1.5, 1.5, 0.5, 1.0],
+        [3.5, 0.5, 0.5, 1.0],
+        [2.5, 2.5, 0.5, 1.0],
     ])
 
     scale = (1., 1.)
@@ -397,7 +397,7 @@ def test_plane_affine_CASE_90_degree_rotation_AND_rectangle_shape():
     ])
 
     expected = np.array([
-        [1.5, 1.5, 0.5, 1.0],
+        [2.5, 0.5, 0.5, 1.0],
     ])
 
     scale = (1., 1.)

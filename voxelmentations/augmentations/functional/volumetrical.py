@@ -80,7 +80,7 @@ def transpose(voxel, dims):
 
     return np.require(voxel, requirements=['C_CONTIGUOUS'])
 
-def affine(voxel, scale, shift, interpolation, border_mode, fill_value):
+def affine(voxel, scale, angles, shift, interpolation, border_mode, fill_value):
     """Apply scale transformations to volume
 
         :NOTE:
@@ -107,7 +107,9 @@ def affine(voxel, scale, shift, interpolation, border_mode, fill_value):
         :args:
             scale: (float, float, float)
                 scaling factor in range from 0 to 1
-            shift: float or (float, float, float)
+            angles: (float, float, float)
+                angles to rotate in range from 0 to 180
+            shift: (float, float, float)
                 translation factor in range from 0 to 1
             interpolation: InterType
                 interpolation mode
@@ -123,21 +125,25 @@ def affine(voxel, scale, shift, interpolation, border_mode, fill_value):
     point = (shape - 1) / 2
 
     S = G.get_volumetric_scaling_matrix(scale)
+    R = G.get_volumetric_rotation_matrix(angles)
 
     if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
         point = np.array([*point, 0])
         shift = np.array([*shift, 0])
     else:
         S = S[:C.NUM_SPATIAL_DIMENSIONS, :C.NUM_SPATIAL_DIMENSIONS]
+        R = R[:C.NUM_SPATIAL_DIMENSIONS, :C.NUM_SPATIAL_DIMENSIONS]
 
-    invS = np.linalg.inv(S)
     dS = S.diagonal()
+    invS = np.diag(1 / dS)
 
-    offset = point - (point + shift) / dS
+    invR = R.T
+
+    offset = point - invR @ (point + shift) / dS
 
     voxel = sc.ndimage.affine_transform(
         voxel,
-        invS,
+        invR @ invS,
         offset=offset,
         order=C.MAP_INTER_TO_SC[interpolation],
         mode=C.MAP_BORDER_TYPE_TO_SC[border_mode],
@@ -188,7 +194,7 @@ def plane_affine(voxel, scale, angle, shear, shift, interpolation, border_mode, 
     point = (shape - 1) / 2
 
     K = G.get_planar_translation_matrix(point)
-    T = G.get_planar_affine_matrix(scale, angle, shear, shift)
+    T = G.get_planar_affine_matrix(scale, -angle, shear, shift)
 
     M = K @ T @ np.linalg.inv(K)
     M = M[:2]

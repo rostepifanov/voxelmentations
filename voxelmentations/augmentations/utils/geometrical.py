@@ -18,6 +18,44 @@ def get_volumetric_scaling_matrix(scales):
 
     return M
 
+def get_volumetric_rotation_matrix(angles):
+    """Get 4x4 counterclockwise rotation matrix for volumetric transformation
+
+        :args:
+            angles: (float, float, float)
+                angle in degrees
+    """
+    xangle, yangle, zangle = angles
+
+    xangle = np.deg2rad(xangle)
+    yangle = np.deg2rad(yangle)
+    zangle = np.deg2rad(zangle)
+
+    Rx = np.array([
+        [ 1.,             0.,              0., 0. ],
+        [ 0., np.cos(xangle), -np.sin(xangle), 0. ],
+        [ 0., np.sin(xangle),  np.cos(xangle), 0. ],
+        [ 0.,              0.,             0., 1. ],
+    ])
+
+    Ry = np.array([
+        [  np.cos(yangle), 0., np.sin(yangle), 0. ],
+        [              0., 1.,             0., 0. ],
+        [ -np.sin(yangle), 0., np.cos(yangle), 0. ],
+        [              0., 0.,             0., 1. ],
+    ])
+
+    Rz = np.array([
+        [ np.cos(zangle), -np.sin(zangle), 0., 0. ],
+        [ np.sin(zangle),  np.cos(zangle), 0., 0. ],
+        [             0.,              0., 1., 0. ],
+        [             0.,              0., 0., 1. ],
+    ])
+
+    M = Rz @ Ry @ Rx
+
+    return M
+
 def get_volumetric_translation_matrix(shifts):
     """Get 4x4 translation matrix for volumetric transformation
 
@@ -38,10 +76,11 @@ def get_volumetric_translation_matrix(shifts):
 
 def get_volumetric_affine_matrix(scales, angles, shears, shiftes):
     T1 = get_volumetric_scaling_matrix(scales)
+    T2 = get_volumetric_rotation_matrix(angles)
 
     T4 = get_volumetric_translation_matrix(shiftes)
 
-    return T4 @ T1
+    return T4 @ T2 @ T1
 
 def get_planar_scaling_matrix(scales):
     """Get 3x3 scaling matrix for planar transformation
@@ -56,6 +95,23 @@ def get_planar_scaling_matrix(scales):
         [ xscale,     0., 0. ],
         [     0., yscale, 0. ],
         [     0.,     0., 1. ],
+    ])
+
+    return M
+
+def get_planar_rotation_matrix(angle):
+    """Get 3x3 counterclockwise rotation matrix for planar transformation
+
+        :args:
+            angle: float
+                angle in degrees
+    """
+    angle = np.deg2rad(angle)
+
+    M = np.array([
+        [ np.cos(angle), -np.sin(angle), 0. ],
+        [ np.sin(angle),  np.cos(angle), 0. ],
+        [            0.,             0., 1. ],
     ])
 
     return M
@@ -75,23 +131,6 @@ def get_planar_shear_matrix(shears):
         [ 1.            , np.tan(xshear), 0. ],
         [ np.tan(yshear),             1., 0. ],
         [             0.,             0., 1. ],
-    ])
-
-    return M
-
-def get_planar_rotation_matrix(angle):
-    """Get 3x3 clockwise rotation matrix for planar transformation
-
-        :args:
-            angle: float
-                angle in degrees
-    """
-    angle = np.deg2rad(angle)
-
-    M = np.array([
-        [ np.cos(angle), -np.sin(angle), 0. ],
-        [ np.sin(angle),  np.cos(angle), 0. ],
-        [            0.,             0., 1. ],
     ])
 
     return M

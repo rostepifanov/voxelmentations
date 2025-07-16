@@ -70,7 +70,7 @@ def plane_affine(points, scale, angle, shear, shift, dim, shape):
     point = 0.5 * shape
 
     K = G.get_planar_translation_matrix(point)
-    T = G.get_planar_affine_matrix(scale, -angle, shear, shift)
+    T = G.get_planar_affine_matrix(scale, angle, shear, shift)
 
     M = K @ T @ np.linalg.inv(K)
 
