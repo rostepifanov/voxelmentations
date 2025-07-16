@@ -43,7 +43,7 @@ def transpose(points, dims):
 
     return points
 
-def affine(points, scale, shift, shape):
+def affine(points, scale, angles, shift, shape):
     points = np.copy(points)
 
     shape = np.array(shape)
@@ -52,7 +52,7 @@ def affine(points, scale, shift, shape):
     point = 0.5 * shape
 
     K = G.get_volumetric_translation_matrix(point)
-    T = G.get_volumetric_affine_matrix(scale, (0, 0, 0), (0, 0, 0), shift)
+    T = G.get_volumetric_affine_matrix(scale, angles, (0, 0, 0), shift)
 
     M = K @ T @ np.linalg.inv(K)
 

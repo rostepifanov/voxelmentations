@@ -113,6 +113,32 @@ AFFINE_VOLUMETRIC_EQUAL_TO_PLANAR = {
         'border_mode': E.BorderType.CONSTANT,
         'fill_value': 0,
     },
+    'rotate_AND_vertical_dim_AND_90deg_AND_even_shape': {
+        'input': np.expand_dims(
+            np.array([
+                [ 1,  2,  3,  4],
+                [ 5,  6,  7,  8],
+                [ 9, 10, 11, 12],
+                [13, 14, 15, 16],
+            ]),
+            axis=(0, 3),
+        ),
+        'planar_args': {
+            'scale': (1., 1.),
+            'angle': 90.,
+            'shear': (0., 0.),
+            'shift': (0., 0.),
+            'dim': C.VERTICAL_DIM,
+        },
+        'volumetric_args': {
+            'scale': (1., 1., 1.),
+            'angles': (90., 0., 0.),
+            'shift': (0., 0., 0.)
+        },
+        'interpolation': E.InterType.NEAREST,
+        'border_mode': E.BorderType.CONSTANT,
+        'fill_value': 0,
+    },
     'translate_AND_axial_dim_AND_hhalfsize_AND_even_shape': {
         'input': np.expand_dims(
             np.array([

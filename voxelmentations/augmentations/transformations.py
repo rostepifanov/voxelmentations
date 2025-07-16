@@ -249,6 +249,7 @@ class Affine(DualAugmentation):
     def __init__(
             self,
             scale_limit=0.05,
+            angle_limit=10,
             shift_limit=0.05,
             border_mode=E.BorderType.DEFAULT,
             interpolation=E.InterType.DEFAULT,
@@ -262,6 +263,8 @@ class Affine(DualAugmentation):
             :args:
                 scale_limit: float
                     limit of scaling
+                angle_limit: float
+                    limit of rotation in degrees [0, 180]
                 shift_limit: float
                     limit of translation as ratio of size
                 border_mode: BorderType
@@ -278,6 +281,7 @@ class Affine(DualAugmentation):
         super(Affine, self).__init__(always_apply, p)
 
         self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
+        self.angle_limit = 180 * M.prepare_inrange_zero_one_float(angle_limit / 180, 'angle_limit')
         self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
 
         self.border_mode = border_mode
@@ -292,6 +296,7 @@ class Affine(DualAugmentation):
     def get_augmentation_init_args_names(self):
         return (
             'scale_limit',
+            'angle_limit',
             'shift_limit',
             'border_mode',
             'interpolation',
@@ -303,9 +308,10 @@ class Affine(DualAugmentation):
     def get_params(self):
         scale = 1 + (2 * np.random.random(1 if self.isotropic else C.NUM_SPATIAL_DIMENSIONS) - 1) * self.scale_limit
         scale = scale.repeat(C.NUM_SPATIAL_DIMENSIONS) if self.isotropic else scale
+        angles = (2 * np.random.random(C.NUM_SPATIAL_DIMENSIONS) - 1) * self.angle_limit
         shift = (2 * np.random.random(C.NUM_SPATIAL_DIMENSIONS) - 1) * self.shift_limit
 
-        return {'scale': scale, 'shift': shift}
+        return {'scale': scale, 'angles': angles, 'shift': shift}
 
     @property
     def targets_as_params(self):
@@ -316,14 +322,14 @@ class Affine(DualAugmentation):
 
         return {'shape': shape}
 
-    def apply(self, voxel, scale, shift, **params):
-        return FV.affine(voxel, scale, (0, 0, 0), shift, self.interpolation, self.border_mode, self.fill_value)
+    def apply(self, voxel, scale, angles, shift, **params):
+        return FV.affine(voxel, scale, angles, shift, self.interpolation, self.border_mode, self.fill_value)
 
-    def apply_to_mask(self, mask, scale, shift, **params):
-        return FV.affine(mask, scale, (0, 0, 0), shift, self.mask_interpolation, self.border_mode, self.mask_fill_value)
+    def apply_to_mask(self, mask, scale, angles, shift, **params):
+        return FV.affine(mask, scale, angles, shift, self.mask_interpolation, self.border_mode, self.mask_fill_value)
 
-    def apply_to_points(self, points, scale, shift, shape, **params):
-        return FG.affine(points, scale, shift, shape)
+    def apply_to_points(self, points, scale, angles, shift, shape, **params):
+        return FG.affine(points, scale, angles, shift, shape)
 
 @register_as_serializable
 class Scale(Affine):
@@ -355,7 +361,7 @@ class Scale(Affine):
                 isotropic: bool
                     flag indicating whether the scale is isotropic or not
         """
-        super(Scale, self).__init__(scale_limit, 0, border_mode, interpolation, fill_value, mask_fill_value, isotropic, always_apply, p)
+        super(Scale, self).__init__(scale_limit, 0, 0, border_mode, interpolation, fill_value, mask_fill_value, isotropic, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (
@@ -394,7 +400,7 @@ class Translate(Affine):
                 mask_fill_value: int or None
                     padding value if border_mode is cv2.BORDER_CONSTANT. if value is None, mask is not affected
         """
-        super(Translate, self).__init__(0, shift_limit, border_mode, interpolation, fill_value, mask_fill_value, True, always_apply, p)
+        super(Translate, self).__init__(0, 0, shift_limit, border_mode, interpolation, fill_value, mask_fill_value, True, always_apply, p)
 
     def get_augmentation_init_args_names(self):
         return (
@@ -476,8 +482,8 @@ class AxialPlaneAffine(DualAugmentation):
     def get_params(self):
         scale = 1 + (2 * np.random.random(1 if self.isotropic else C.NUM_PLANAR_DIMENSIONS) - 1) * self.scale_limit
         scale = scale.repeat(C.NUM_PLANAR_DIMENSIONS) if self.isotropic else scale
-        angle = 180 * (2 * np.random.random() - 1) * self.angle_limit / 180
-        shear = 180 * (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shear_limit / 180
+        angle = (2 * np.random.random() - 1) * self.angle_limit
+        shear = (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shear_limit
         shift = (2 * np.random.random(C.NUM_PLANAR_DIMENSIONS) - 1) * self.shift_limit
 
         return {'scale': scale, 'angle': angle, 'shear': shear, 'shift': shift}
