@@ -7,6 +7,166 @@ import voxelmentations.core.constants as C
 
 from voxelmentations.augmentations.functional import FV, FG
 
+AFFINE_VOLUMETRIC_EQUAL_TO_PLANAR = {
+    'scale_AND_axial_dim_AND_downscale_AND_even_shape': {
+        'input': np.expand_dims(
+            np.array([
+                [ 1, 1, 5, 5],
+                [ 1, 1, 5, 5],
+                [ 3, 3, 7, 7],
+                [ 3, 3, 7, 7],
+            ]),
+            axis=(2, 3),
+        ),
+        'planar_args': {
+            'scale': (0.5, 0.5),
+            'angle': 0.,
+            'shear': (0., 0.),
+            'shift': (0., 0.),
+            'dim': C.AXIAL_DIM,
+        },
+        'volumetric_args': {
+            'scale': (0.5, 0.5, 1.),
+            'angles': (0., 0., 0.),
+            'shift': (0., 0., 0.)
+        },
+        'interpolation': E.InterType.NEAREST,
+        'border_mode': E.BorderType.CONSTANT,
+        'fill_value': 0,
+    },
+    'scale_AND_axial_dim_AND_upscale_AND_odd_shape': {
+        'input': np.expand_dims(
+            np.array([
+                [ 1, 1, 1, 1, 1],
+                [ 1, 3, 3, 3, 1],
+                [ 1, 3, 5, 3, 1],
+                [ 1, 3, 3, 3, 1],
+                [ 1, 1, 1, 1, 1],
+            ]),
+            axis=(2, 3),
+        ),
+        'planar_args': {
+            'scale': (2., 2.),
+            'angle': 0.,
+            'shear': (0., 0.),
+            'shift': (0., 0.),
+            'dim': C.AXIAL_DIM,
+        },
+        'volumetric_args': {
+            'scale': (2., 2., 1.),
+            'angles': (0., 0., 0.),
+            'shift': (0., 0., 0.)
+        },
+        'interpolation': E.InterType.NEAREST,
+        'border_mode': E.BorderType.CONSTANT,
+        'fill_value': 0,
+    },
+    'scale_AND_axial_dim_AND_upscale_AND_even_shape': {
+        'input': np.expand_dims(
+            np.array([
+                [ 1,  2,  3,  4],
+                [ 5,  6,  7,  8],
+                [ 9, 10, 11, 12],
+                [13, 14, 15, 16],
+            ]),
+            axis=(2, 3),
+        ),
+        'planar_args': {
+            'scale': (2., 2.),
+            'angle': 0.,
+            'shear': (0., 0.),
+            'shift': (0., 0.),
+            'dim': C.AXIAL_DIM,
+        },
+        'volumetric_args': {
+            'scale': (2., 2., 1.),
+            'angles': (0., 0., 0.),
+            'shift': (0., 0., 0.)
+        },
+        'interpolation': E.InterType.NEAREST,
+        'border_mode': E.BorderType.CONSTANT,
+        'fill_value': 0,
+    },
+    'rotate_AND_axial_dim_AND_90deg_AND_even_shape': {
+        'input': np.expand_dims(
+            np.array([
+                [ 1,  2,  3,  4],
+                [ 5,  6,  7,  8],
+                [ 9, 10, 11, 12],
+                [13, 14, 15, 16],
+            ]),
+            axis=(2, 3),
+        ),
+        'planar_args': {
+            'scale': (1., 1.),
+            'angle': 90.,
+            'shear': (0., 0.),
+            'shift': (0., 0.),
+            'dim': C.AXIAL_DIM,
+        },
+        'volumetric_args': {
+            'scale': (1., 1., 1.),
+            'angles': (0., 0., 90.),
+            'shift': (0., 0., 0.)
+        },
+        'interpolation': E.InterType.NEAREST,
+        'border_mode': E.BorderType.CONSTANT,
+        'fill_value': 0,
+    },
+    'translate_AND_axial_dim_AND_hhalfsize_AND_even_shape': {
+        'input': np.expand_dims(
+            np.array([
+                [ 1,  2,  3,  4],
+                [ 5,  6,  7,  8],
+                [ 9, 10, 11, 12],
+                [13, 14, 15, 16],
+            ]),
+            axis=(2, 3),
+        ),
+        'planar_args': {
+            'scale': (1., 1.),
+            'angle': 0.,
+            'shear': (0., 0.),
+            'shift': (0.25, 0.25),
+            'dim': C.AXIAL_DIM,
+        },
+        'volumetric_args': {
+            'scale': (1., 1., 1.),
+            'angles': (0., 0., 0.),
+            'shift': (0.25, 0.25, 0.)
+        },
+        'interpolation': E.InterType.NEAREST,
+        'border_mode': E.BorderType.CONSTANT,
+        'fill_value': 0,
+    },
+    'affine_AND_axial_dim_AND_90deg_hhalfsize_AND_even_shape': {
+        'input': np.expand_dims(
+            np.array([
+                [ 1,  2,  3,  4],
+                [ 5,  6,  7,  8],
+                [ 9, 10, 11, 12],
+                [13, 14, 15, 16],
+            ]),
+            axis=(2, 3),
+        ),
+        'planar_args': {
+            'scale': (1., 1.),
+            'angle': 90.,
+            'shear': (0., 0.),
+            'shift': (0.25, 0.25),
+            'dim': C.AXIAL_DIM,
+        },
+        'volumetric_args': {
+            'scale': (1., 1., 1.),
+            'angles': (0., 0., 90.),
+            'shift': (0.25, 0.25, 0.)
+        },
+        'interpolation': E.InterType.NEAREST,
+        'border_mode': E.BorderType.CONSTANT,
+        'fill_value': 0,
+    },
+}
+
 @pytest.mark.functional
 def test_plane_dropout_CASE_zero_dim():
     input = np.expand_dims(
@@ -88,134 +248,24 @@ def test_pad_CASE_left_AND_replicate_border():
     assert np.allclose(output, expected)
 
 @pytest.mark.functional
-def test_affine_CASE_planar_equal_to_volumetric_AND_scaling_AND_axial_dim_AND_even_shape_AND_upscaling():
-    input = np.expand_dims(
-        np.array([
-            [ 1,  2,  3,  4],
-            [ 5,  6,  7,  8],
-            [ 9, 10, 11, 12],
-            [13, 14, 15, 16],
-        ]),
-        axis=(2, 3),
-    )
-
-    scale = 2
-    volumetric_scale = (scale, scale, 1.)
-    planar_scale = (scale, scale)
-
-    interpolation = E.InterType.NEAREST
-    border_mode = E.BorderType.CONSTANT
-    fill_value = 0
+@pytest.mark.parametrize('case', AFFINE_VOLUMETRIC_EQUAL_TO_PLANAR.keys())
+def test_affine_CASE_volumetric_equal_to_planar(case):
+    args = AFFINE_VOLUMETRIC_EQUAL_TO_PLANAR[case]
 
     volumetric_output = FV.affine(
-        input,
-        volumetric_scale,
-        (0., 0., 0.),
-        0.,
-        interpolation,
-        border_mode,
-        fill_value,
+        args['input'],
+        interpolation=args['interpolation'],
+        border_mode=args['border_mode'],
+        fill_value=args['fill_value'],
+        **args['volumetric_args'],
     )
 
     planar_output = FV.plane_affine(
-        input,
-        planar_scale,
-        0.,
-        (0., 0.),
-        0.,
-        interpolation,
-        border_mode,
-        fill_value,
-        C.AXIAL_DIM,
-    )
-
-    assert np.allclose(volumetric_output, planar_output)
-
-@pytest.mark.functional
-def test_affine_CASE_planar_equal_to_volumetric_AND_scaling_AND_axial_dim_AND_even_shape_AND_downscaling():
-    input = np.expand_dims(
-        np.array([
-            [ 1, 1, 5, 5],
-            [ 1, 1, 5, 5],
-            [ 3, 3, 7, 7],
-            [ 3, 3, 7, 7],
-        ]),
-        axis=(2, 3),
-    )
-
-    scale = 0.5
-    volumetric_scale = (scale, scale, 1.)
-    planar_scale = (scale, scale)
-
-    interpolation = E.InterType.NEAREST
-    border_mode = E.BorderType.CONSTANT
-    fill_value = 0
-
-    volumetric_output = FV.affine(
-        input,
-        volumetric_scale,
-        (0., 0., 0.),
-        0.,
-        interpolation,
-        border_mode,
-        fill_value,
-    )
-
-    planar_output = FV.plane_affine(
-        input,
-        planar_scale,
-        0.,
-        (0., 0.),
-        0.,
-        interpolation,
-        border_mode,
-        fill_value,
-        C.AXIAL_DIM,
-    )
-
-    assert np.allclose(volumetric_output, planar_output)
-
-@pytest.mark.functional
-def test_affine_CASE_planar_equal_to_volumetric_AND_scaling_AND_axial_dim_AND_odd_shape():
-    input = np.expand_dims(
-        np.array([
-            [ 1., 1., 1., 1., 1.],
-            [ 1., 3., 3., 3., 1.],
-            [ 1., 3., 5., 3., 1.],
-            [ 1., 3., 3., 3., 1.],
-            [ 1., 1., 1., 1., 1.],
-        ]),
-        axis=(2, 3),
-    )
-
-    scale = 2.
-    volumetric_scale = (scale, scale, 1.)
-    planar_scale = (scale, scale)
-
-    interpolation = E.InterType.LINEAR
-    border_mode = E.BorderType.CONSTANT
-    fill_value = 0
-
-    volumetric_output = FV.affine(
-        input,
-        volumetric_scale,
-        (0., 0., 0.),
-        0.,
-        interpolation,
-        border_mode,
-        fill_value,
-    )
-
-    planar_output = FV.plane_affine(
-        input,
-        planar_scale,
-        0.,
-        (0., 0.),
-        0.,
-        interpolation,
-        border_mode,
-        fill_value,
-        C.AXIAL_DIM,
+        args['input'],
+        interpolation=args['interpolation'],
+        border_mode=args['border_mode'],
+        fill_value=args['fill_value'],
+        **args['planar_args'],
     )
 
     assert np.allclose(volumetric_output, planar_output)
@@ -280,101 +330,6 @@ def test_affine_CASE_planar_equal_to_volumetric_AND_scaling_AND_twice_isotropic_
         border_mode,
         fill_value,
         C.VERTICAL_DIM,
-    )
-
-    assert np.allclose(volumetric_output, planar_output)
-
-@pytest.mark.functional
-def test_affine_CASE_planar_equal_to_volumetric_AND_rotation_AND_axial_dim_AND_even_shape_AND_45degree():
-    input = np.expand_dims(
-        np.array([
-            [ 1,  2,  3,  4],
-            [ 5,  6,  7,  8],
-            [ 9, 10, 11, 12],
-            [13, 14, 15, 16],
-        ]),
-        axis=(2, 3),
-    )
-
-    angle = 90.
-    volumetric_angle = (0., 0., angle)
-    planar_angle = angle
-
-    interpolation = E.InterType.NEAREST
-    border_mode = E.BorderType.CONSTANT
-    fill_value = 0
-
-    volumetric_output = FV.affine(
-        input,
-        (1., 1., 1.),
-        volumetric_angle,
-        0.,
-        interpolation,
-        border_mode,
-        fill_value,
-    )
-
-    planar_output = FV.plane_affine(
-        input,
-        (1., 1.),
-        planar_angle,
-        (0., 0.),
-        0.,
-        interpolation,
-        border_mode,
-        fill_value,
-        C.AXIAL_DIM,
-    )
-
-    print(volumetric_output[..., 0, 0])
-    print(planar_output[..., 0, 0])
-
-    assert np.allclose(volumetric_output, planar_output)
-
-@pytest.mark.functional
-def test_affine_CASE_planar_equal_to_volumetric_AND_translation_AND_axial_dim():
-    input = np.expand_dims(
-        np.array([
-            [ 1,  2,  3,  4],
-            [ 5,  6,  7,  8],
-            [ 9, 10, 11, 12],
-            [13, 14, 15, 16],
-        ]),
-        axis=(2, 3),
-    )
-
-    volumetric_scale = (1., 1., 1.)
-    planar_scale = (1., 1.)
-
-    xshift = 0.25
-    yshift = 0.25
-    volumetric_shift = (xshift, yshift, 0)
-    planar_shift = (xshift, yshift)
-
-    interpolation = E.InterType.NEAREST
-    border_mode = E.BorderType.CONSTANT
-    fill_value = 0
-
-    volumetric_output = FV.affine(
-        input,
-        volumetric_scale,
-        (0., 0., 0.),
-        volumetric_shift,
-        interpolation,
-        border_mode,
-        fill_value,
-    )
-
-    planar_output = FV.plane_affine(
-        input,
-        planar_scale,
-        0.,
-        (0., 0.),
-        planar_shift,
-        interpolation,
-        border_mode,
-        fill_value,
-        C.AXIAL_DIM,
     )
 
     assert np.allclose(volumetric_output, planar_output)
