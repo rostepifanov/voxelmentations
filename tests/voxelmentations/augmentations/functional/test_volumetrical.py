@@ -274,24 +274,24 @@ def test_pad_CASE_left_AND_replicate_border():
     assert np.allclose(output, expected)
 
 @pytest.mark.functional
-@pytest.mark.parametrize('case', AFFINE_VOLUMETRIC_EQUAL_TO_PLANAR.keys())
-def test_affine_CASE_volumetric_equal_to_planar(case):
-    args = AFFINE_VOLUMETRIC_EQUAL_TO_PLANAR[case]
+@pytest.mark.parametrize('name', AFFINE_VOLUMETRIC_EQUAL_TO_PLANAR.keys())
+def test_affine_CASE_volumetric_equal_to_planar(name):
+    case = AFFINE_VOLUMETRIC_EQUAL_TO_PLANAR[name]
 
     volumetric_output = FV.affine(
-        args['input'],
-        interpolation=args['interpolation'],
-        border_mode=args['border_mode'],
-        fill_value=args['fill_value'],
-        **args['volumetric_args'],
+        case['input'],
+        interpolation=case['interpolation'],
+        border_mode=case['border_mode'],
+        fill_value=case['fill_value'],
+        **case['volumetric_args'],
     )
 
     planar_output = FV.plane_affine(
-        args['input'],
-        interpolation=args['interpolation'],
-        border_mode=args['border_mode'],
-        fill_value=args['fill_value'],
-        **args['planar_args'],
+        case['input'],
+        interpolation=case['interpolation'],
+        border_mode=case['border_mode'],
+        fill_value=case['fill_value'],
+        **case['planar_args'],
     )
 
     assert np.allclose(volumetric_output, planar_output)
