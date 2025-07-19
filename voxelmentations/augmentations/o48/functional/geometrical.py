@@ -2,6 +2,12 @@ import numpy as np
 
 def flip(points, dims, shape):
     """Flip along dims
+
+        :args:
+            dims: tuple of int
+                the value of dims to flip
+            shape: tuple of float
+                voxel shape where the point is located
     """
     points = np.copy(points)
 
@@ -12,6 +18,14 @@ def flip(points, dims, shape):
 
 def rot90(points, dims, times, shape):
     """Rotate clockwise in plane formed by dims
+
+        :args:
+            dims: (int, int)
+                the value of dims to form rotating plane
+            times: int
+                the number of plane rotation by 90 degrees
+            shape: tuple of float
+                voxel shape where the point is located
     """
     points = np.copy(points)
 
@@ -32,6 +46,10 @@ def rot90(points, dims, times, shape):
 
 def transpose(points, dims):
     """Transpose a plane formed by dims
+
+        :args:
+            dims: (int, int)
+                the value of dims to permute
     """
     points = np.copy(points)
 
