@@ -24,7 +24,7 @@ class Flip(DualAugmentation):
             if code % 2 == 1:
                 dims = [*dims, dim]
 
-            code = code / 2
+            code = code // 2
 
         return {'dims': dims}
 
