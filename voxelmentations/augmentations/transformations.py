@@ -592,19 +592,10 @@ class GaussBlur(VoxelOnlyAugmentation):
     def get_params(self):
         kernel_size = 2 * np.random.randint(self.min_kernel_size // 2, self.max_kernel_size // 2 + 1) + 1
 
-        x = np.kron(np.arange(kernel_size), np.ones((kernel_size, kernel_size, 1)))
-        y = np.moveaxis(x, 0, -1)
-        z = np.moveaxis(y, 0, -1)
+        return {'kernel_size': kernel_size}
 
-        distances = (x - kernel_size // 2 )**2 + (y - kernel_size // 2 )**2 + (z - kernel_size // 2 )**2
-        kernel = np.exp( -0.5 * distances / self.variance )
-
-        kernel = kernel / kernel.sum()
-
-        return {'kernel': kernel}
-
-    def apply(self, voxel, kernel, **params):
-        return FV.conv(voxel, kernel, E.BorderType.CONSTANT, 0)
+    def apply(self, voxel, kernel_size, **params):
+        return FV.gaussian_blur(voxel, self.variance, kernel_size, E.BorderType.CONSTANT, 0)
 
 @register_as_serializable
 class IntensityShift(VoxelOnlyAugmentation):

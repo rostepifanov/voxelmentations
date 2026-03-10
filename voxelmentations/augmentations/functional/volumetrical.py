@@ -197,6 +197,27 @@ def conv(voxel, kernel, border_mode, fill_value):
         cval=fill_value,
     )
 
+def gaussian_blur(voxel, variance, kernel_size, border_mode, fill_value):
+    sigma = variance ** 0.5
+
+    if sigma == 0:
+        return voxel
+
+    truncate = (kernel_size - 1) / (2 * sigma)
+
+    if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
+        sigma = (sigma, sigma, sigma, 0)
+    else:
+        sigma = (sigma, sigma, sigma)
+
+    return sc.ndimage.gaussian_filter(
+        voxel,
+        sigma=sigma,
+        mode=C.MAP_BORDER_TYPE_TO_SC[border_mode],
+        cval=fill_value,
+        truncate=truncate,
+    )
+
 def distort(voxel, distorted_grid, interpolation):
     """
         :NOTE:
