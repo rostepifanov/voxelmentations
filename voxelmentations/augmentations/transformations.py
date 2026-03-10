@@ -106,10 +106,10 @@ class PadIfNeeded(DualAugmentation):
             right_pad = pad_height - left_pad
 
             top_pad = np.random.randint(0, pad_width + 1)
-            bottom_pad = pad_height - top_pad
+            bottom_pad = pad_width - top_pad
 
             front_pad = np.random.randint(0, pad_depth + 1)
-            back_pad = pad_height - front_pad
+            back_pad = pad_depth - front_pad
 
         pads = (
             (left_pad, right_pad),
@@ -125,8 +125,8 @@ class PadIfNeeded(DualAugmentation):
     def apply_to_mask(self, mask, pads, **params):
         return FV.pad(mask, pads, self.border_mode, self.mask_fill_value)
 
-    def apply_to_points(self, points, pads, **data):
-        raise FG.pad(points, pads)
+    def apply_to_points(self, points, pads, **params):
+        return FG.pad(points, pads)
 
 @register_as_serializable
 class Affine(DualAugmentation):
