@@ -3,7 +3,7 @@ import enum
 class BorderType(enum.Enum):
     CONSTANT = 'constant'
     REPLICATE = 'replicate'
-    REFLECT_1001 = 'reflect'
+    REFLECT_1001 = 'symmetric'
     REFLECT_101 = 'reflect'
     WRAP = 'wrap'
     DEFAULT = CONSTANT
