@@ -287,8 +287,6 @@ def patch_shuffle(voxel, patches):
         pixels = voxel[patch]
         np.random.shuffle(pixels)
 
-        voxel[patch] = pixels
-
     return voxel
 
 def rescale(voxel, scale, interpolation):
