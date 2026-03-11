@@ -139,16 +139,12 @@ class Augmentation(Transformation):
         if params is None:
             return data
 
-        pdata = {}
-
         for key, datum in data.items():
             if datum is not None:
                 target_function = self._get_target_function(key)
-                pdata[key] = target_function(datum, **params)
-            else:
-                pdata[key] = None
+                data[key] = target_function(datum, **params)
 
-        return pdata
+        return data
 
     def __repr__(self):
         state = self.get_base_init_args()
