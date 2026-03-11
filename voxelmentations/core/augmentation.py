@@ -21,7 +21,8 @@ class Augmentation(Transformation):
         """
         super(Augmentation, self).__init__(always_apply, p)
 
-        self._keys = {k: v for k, v in  zip(self.targets.keys(), self.targets.keys()) }
+        self._cached_targets = self.targets
+        self._keys = {k: k for k in self._cached_targets}
 
     def get_augmentation_init_args_names(self):
         raise NotImplementedError(
@@ -119,19 +120,23 @@ class Augmentation(Transformation):
                     f'Trying to overwrite existed key. '
                     f'Key={additional_key} exists in [{existed_keys}]',
                 )
-            elif existed_target in self.targets.keys():
+            elif existed_target in self._cached_targets.keys():
                 _keys[additional_key] = self._keys[existed_target]
 
         self._keys.update(_keys)
 
         return self
 
+    @staticmethod
+    def _identity_target(x, **params):
+        return x
+
     def _get_target_function(self, key):
         if key in self._keys:
             target = self._keys[key]
-            function = self.targets[target]
+            function = self._cached_targets[target]
         else:
-            function = lambda x, **p: x
+            function = self._identity_target
 
         return function
 
