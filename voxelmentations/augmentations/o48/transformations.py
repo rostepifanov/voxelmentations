@@ -94,7 +94,7 @@ class AxialPlaneRotate90(Rotate90):
     _DIMS = (C.AXIAL_DIM, )
 
 @register_as_serializable
-class Tranpose(DualAugmentation):
+class Transpose(DualAugmentation):
     """Transpose a voxel on orthogonal plane to a dim.
     """
     _DIMS = (C.HORIZONTAL_DIM, C.VERTICAL_DIM, C.AXIAL_DIM)
@@ -115,7 +115,7 @@ class Tranpose(DualAugmentation):
         return FG.transpose(points, dims)
 
 @register_as_serializable
-class AxialPlaneTranpose(Tranpose):
+class AxialPlaneTranspose(Transpose):
     """Transpose a voxel in x-y plane.
     """
     _DIMS = (C.AXIAL_DIM, )
