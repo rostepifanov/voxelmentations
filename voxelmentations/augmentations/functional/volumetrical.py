@@ -285,7 +285,16 @@ def patch_shuffle(voxel, patches):
 
     for patch in patches:
         pixels = voxel[patch]
-        np.random.shuffle(pixels)
+
+        shape = pixels.shape
+
+        if pixels.ndim == C.NUM_MULTI_CHANNEL_DIMENSIONS:
+            flat = pixels.reshape(-1, shape[C.CHANNEL_DIM])
+        else:
+            flat = pixels.reshape(-1)
+
+        np.random.shuffle(flat)
+        voxel[patch] = flat.reshape(shape)
 
     return voxel
 
