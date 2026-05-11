@@ -46,9 +46,9 @@ class PadIfNeeded(DualAugmentation):
         self.min_width = M.prepare_non_negative_int(min_width, 'min_width')
         self.min_depth = M.prepare_non_negative_int(min_depth, 'min_depth')
 
-        self.position = E.PositionType(position)
+        self.position = M.prepare_enum(position, E.PositionType, 'position')
 
-        self.border_mode = border_mode
+        self.border_mode = M.prepare_enum(border_mode, E.BorderType, 'border_mode')
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
         self.mask_fill_value = M.prepare_int(mask_fill_value, 'mask_fill_value')
 
@@ -170,8 +170,8 @@ class Affine(DualAugmentation):
         self.angle_limit = 180 * M.prepare_inrange_zero_one_float(angle_limit / 180, 'angle_limit')
         self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
 
-        self.border_mode = border_mode
-        self.interpolation = interpolation
+        self.border_mode = M.prepare_enum(border_mode, E.BorderType, 'border_mode')
+        self.interpolation = M.prepare_enum(interpolation, E.InterType, 'interpolation')
         self.mask_interpolation = E.InterType.NEAREST
 
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
@@ -343,8 +343,8 @@ class AxialPlaneAffine(DualAugmentation):
         self.shear_limit = 180 * M.prepare_inrange_zero_one_float(shear_limit / 180, 'shear_limit')
         self.shift_limit = M.prepare_non_negative_float(shift_limit, 'shift_limit')
 
-        self.border_mode = border_mode
-        self.interpolation = interpolation
+        self.border_mode = M.prepare_enum(border_mode, E.BorderType, 'border_mode')
+        self.interpolation = M.prepare_enum(interpolation, E.InterType, 'interpolation')
         self.mask_interpolation = E.InterType.NEAREST
 
         self.fill_value = M.prepare_float(fill_value, 'fill_value')
@@ -761,7 +761,7 @@ class GridDistort(DualAugmentation):
         self.distort_limit = M.prepare_non_negative_float(distort_limit, 'distort_limit')
         self.ncells = M.prepare_int(ncells, 'ncells')
 
-        self.interpolation = interpolation
+        self.interpolation = M.prepare_enum(interpolation, E.InterType, 'interpolation')
         self.mask_interpolation = E.InterType.NEAREST
 
     def get_augmentation_init_args_names(self):
@@ -828,7 +828,7 @@ class ElasticDistort(DualAugmentation):
         self.distort_limit = M.prepare_non_negative_float(distort_limit, 'distort_limit')
         self.sigma = M.prepare_float(sigma, 'sigma')
 
-        self.interpolation = interpolation
+        self.interpolation = M.prepare_enum(interpolation, E.InterType, 'interpolation')
         self.mask_interpolation = E.InterType.NEAREST
 
     def get_augmentation_init_args_names(self):
@@ -1117,7 +1117,11 @@ class Downscale(VoxelOnlyAugmentation):
 
         self.scale_limit = M.prepare_non_negative_float(scale_limit, 'scale_limit')
 
-        self.downscale_interpolation = downscale_interpolation
+        self.downscale_interpolation = M.prepare_enum(
+            downscale_interpolation,
+            E.InterType,
+            'downscale_interpolation',
+        )
         self.upscale_interpolation = E.InterType.LINEAR
 
     def get_augmentation_init_args_names(self):

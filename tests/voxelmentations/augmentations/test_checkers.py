@@ -1,6 +1,7 @@
 import pytest
 
 import voxelmentations.augmentations.checkers as C
+import voxelmentations.core.enum as E
 
 def test_prepare_float_CASE_wrong_type():
     with pytest.raises(ValueError):
@@ -91,3 +92,17 @@ def test_prepare_float_asymrange_CASE_tuple_float_AND_low():
 def test_prepare_int_asymrange_CASE_tuple_float_AND_long():
     with pytest.raises(ValueError):
         C.prepare_float_asymrange((0., 1., 2.), '', 0.)
+
+def test_prepare_enum_CASE_enum_value():
+    output = C.prepare_enum('constant', E.BorderType, 'border_mode')
+
+    assert output == E.BorderType.CONSTANT
+
+def test_prepare_enum_CASE_enum_instance():
+    output = C.prepare_enum(E.InterType.LINEAR, E.InterType, 'interpolation')
+
+    assert output == E.InterType.LINEAR
+
+def test_prepare_enum_CASE_wrong_value():
+    with pytest.raises(ValueError, match=r'Invalid value of border_mode'):
+        C.prepare_enum('wrong', E.BorderType, 'border_mode')

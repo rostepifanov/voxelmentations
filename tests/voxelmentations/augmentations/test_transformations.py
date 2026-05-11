@@ -3,6 +3,7 @@ import pytest
 import numpy as np
 import voxelmentations as V
 import voxelmentations.core.constants as C
+import voxelmentations.core.enum as E
 
 SHAPE_PRESERVED_TRANSFORMS = [
     V.Flip,
@@ -157,6 +158,37 @@ def test_Transform_CASE_mask_fill_value(transform, monkeypatch):
 
     unique_values_mask = np.unique(transformed['mask'])
     assert set(unique_values_mask) == { base_value, mask_fill_value }
+
+@pytest.mark.parametrize(
+    'transform, kwargs',
+    [
+        (V.PadIfNeeded, {'border_mode': 'wrong'}),
+        (V.PadIfNeeded, {'position': 'wrong'}),
+        (V.Affine, {'border_mode': 'wrong'}),
+        (V.Affine, {'interpolation': 'wrong'}),
+        (V.AxialPlaneAffine, {'border_mode': 'wrong'}),
+        (V.AxialPlaneAffine, {'interpolation': 'wrong'}),
+        (V.GridDistort, {'interpolation': 'wrong'}),
+        (V.ElasticDistort, {'interpolation': 'wrong'}),
+        (V.Downscale, {'downscale_interpolation': 'wrong'}),
+    ],
+)
+def test_Transform_CASE_create_AND_invalid_enum_like_args(transform, kwargs):
+    with pytest.raises(ValueError):
+        transform(**kwargs)
+
+def test_Transform_CASE_create_AND_enum_like_args_normalized():
+    pad = V.PadIfNeeded(position='center', border_mode='constant')
+    affine = V.Affine(border_mode='constant', interpolation='linear')
+    distort = V.GridDistort(interpolation='linear')
+    downscale = V.Downscale(downscale_interpolation='nearest')
+
+    assert pad.position == E.PositionType.CENTER
+    assert pad.border_mode == E.BorderType.CONSTANT
+    assert affine.border_mode == E.BorderType.CONSTANT
+    assert affine.interpolation == E.InterType.LINEAR
+    assert distort.interpolation == E.InterType.LINEAR
+    assert downscale.downscale_interpolation == E.InterType.NEAREST
 
 @pytest.mark.parametrize('transform', SHAPE_PRESERVED_TRANSFORMS + SHAPE_UNPRESERVED_TRANSFORMS)
 def test_Transform_CASE_to_dict_AND_from_load_AND_mono_channel(transform):

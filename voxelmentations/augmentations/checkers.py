@@ -154,3 +154,14 @@ def prepare_float_asymrange(param, name, low):
         )
 
     return tuple(param)
+
+def prepare_enum(param, enum_cls, name):
+    try:
+        return enum_cls(param)
+    except (TypeError, ValueError):
+        supported = ', '.join(repr(item.value) for item in enum_cls)
+        raise ValueError(
+            'Invalid value of {}. Got: {}. Supported values: {}.'.format(
+                name, param, supported
+            )
+        )
