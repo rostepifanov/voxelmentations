@@ -4,6 +4,17 @@ from functools import wraps
 
 import voxelmentations.core.constants as C
 
+def contiguous(func):
+    """Ensure that the function output is C-contiguous."""
+
+    @wraps(func)
+    def wfunc(*args, **kwargs):
+        output = func(*args, **kwargs)
+
+        return np.require(output, requirements=['C_CONTIGUOUS'])
+
+    return wfunc
+
 def preserve_channel_dim(func):
     """Preserve dummy channel dim."""
 
