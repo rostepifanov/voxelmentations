@@ -89,6 +89,26 @@ def test_NonSequential_CASE_additional_keys():
     assert np.allclose(output, expected)
 
 @pytest.mark.core
+def test_NonSequential_CASE_call_AND_keep_original_order(monkeypatch):
+    transformations = [
+        V.Identity(always_apply=True),
+        V.AxialFlip(always_apply=True),
+    ]
+    transformation = V.NonSequential(transformations, always_apply=True)
+
+    monkeypatch.setattr(
+        np.random,
+        'permutation',
+        lambda items: list(reversed(items)),
+    )
+
+    original_order = list(transformation.transformations)
+
+    transformation(voxel=np.random.randn(32, 32, 32, 1))
+
+    assert transformation.transformations == original_order
+
+@pytest.mark.core
 def test_Compose_CASE_additional_keys_AND_hierarchy():
     input = np.random.randn(32, 32, 32, 1)
 

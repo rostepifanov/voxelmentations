@@ -115,9 +115,7 @@ class NonSequential(Sequential):
     """
     def __call__(self, *args, force_apply=False, **data):
         if self.whether_apply(force_apply):
-            np.random.shuffle(self.transformations)
-
-            for transform in self.transformations:
+            for transform in np.random.permutation(self.transformations):
                 data = transform(**data)
 
         return data
