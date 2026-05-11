@@ -372,6 +372,28 @@ def test_flip_AND_align_with_mask(name):
 
 @pytest.mark.functional
 @pytest.mark.o48
+@pytest.mark.flip
+def test_flip_CASE_inverse():
+    voxel = np.arange(2 * 3 * 4).reshape(2, 3, 4, 1)
+    points = np.array([
+        [0.5, 1.5, 2.5, 1.0],
+        [1.5, 0.5, 1.5, 1.0],
+    ])
+
+    dims = [0, 2]
+    shape = voxel.shape[:C.NUM_SPATIAL_DIMENSIONS]
+
+    tvoxel = FV.flip(voxel, dims)
+    tvoxel = FV.flip(tvoxel, dims)
+
+    tpoints = FG.flip(points, dims, shape)
+    tpoints = FG.flip(tpoints, dims, shape)
+
+    assert np.allclose(tvoxel, voxel)
+    assert np.allclose(tpoints, points)
+
+@pytest.mark.functional
+@pytest.mark.o48
 @pytest.mark.rot90
 @pytest.mark.parametrize('name', ROT90.keys())
 def test_rot90(name):
@@ -441,6 +463,30 @@ def test_rot90_AND_align_with_mask(name):
 
 @pytest.mark.functional
 @pytest.mark.o48
+@pytest.mark.rot90
+def test_rot90_CASE_inverse():
+    voxel = np.arange(3 * 4 * 5).reshape(3, 4, 5, 1)
+    points = np.array([
+        [0.5, 1.5, 2.5, 1.0],
+        [1.5, 2.5, 3.5, 1.0],
+    ])
+
+    dims = [0, 1]
+    shape = voxel.shape[:C.NUM_SPATIAL_DIMENSIONS]
+
+    tvoxel = np.copy(voxel)
+    for _ in range(4):
+        tvoxel = FV.rot90(tvoxel, dims, 1)
+
+    tpoints = np.copy(points)
+    for _ in range(4):
+        tpoints = FG.rot90(tpoints, dims, 1, shape)
+
+    assert np.allclose(tvoxel, voxel)
+    assert np.allclose(tpoints, points)
+
+@pytest.mark.functional
+@pytest.mark.o48
 @pytest.mark.transpose
 @pytest.mark.parametrize('name', TRANSPOSE.keys())
 def test_transpose(name):
@@ -476,3 +522,24 @@ def test_rot90_AND_align_with_mask(name):
         tmask[xidx, yidx, zidx] = 0
 
     assert np.all(tmask == 0)
+
+@pytest.mark.functional
+@pytest.mark.o48
+@pytest.mark.transpose
+def test_transpose_CASE_inverse():
+    voxel = np.arange(3 * 4 * 5).reshape(3, 4, 5, 1)
+    points = np.array([
+        [0.5, 1.5, 2.5, 1.0],
+        [1.5, 2.5, 3.5, 1.0],
+    ])
+
+    dims = [1, 2]
+
+    tvoxel = FV.transpose(voxel, dims)
+    tvoxel = FV.transpose(tvoxel, dims)
+
+    tpoints = FG.transpose(points, dims)
+    tpoints = FG.transpose(tpoints, dims)
+
+    assert np.allclose(tvoxel, voxel)
+    assert np.allclose(tpoints, points)

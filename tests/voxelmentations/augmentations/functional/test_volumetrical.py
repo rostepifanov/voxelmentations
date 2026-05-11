@@ -214,6 +214,44 @@ def test_plane_dropout_CASE_zero_dim():
     assert np.allclose(output, expected)
 
 @pytest.mark.functional
+def test_patch_shuffle_CASE_shuffle_whole_patch(monkeypatch):
+    input = np.array([
+        [
+            [[0], [1]],
+            [[2], [3]],
+        ],
+        [
+            [[4], [5]],
+            [[6], [7]],
+        ],
+    ])
+    patch = (
+        slice(0, 2),
+        slice(0, 2),
+        slice(0, 2),
+    )
+
+    expected = np.array([
+        [
+            [[7], [6]],
+            [[5], [4]],
+        ],
+        [
+            [[3], [2]],
+            [[1], [0]],
+        ],
+    ])
+
+    def fake_shuffle(arr):
+        arr[:] = arr[::-1]
+
+    monkeypatch.setattr(np.random, 'shuffle', fake_shuffle)
+
+    output = FV.patch_shuffle(input, [patch])
+
+    assert np.allclose(output, expected)
+
+@pytest.mark.functional
 def test_pad_CASE_left_AND_constant_border():
     input = np.expand_dims(
         np.array([1, 2, 3, 4]),
