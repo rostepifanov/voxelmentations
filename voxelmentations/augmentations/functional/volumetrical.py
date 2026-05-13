@@ -181,10 +181,10 @@ def add(voxel, other):
     if len(voxel.shape) > len(other.shape):
         other = np.expand_dims(other, axis=C.CHANNEL_DIM)
 
-    return np.add(voxel, other, dtype=voxel.dtype)
+    return np.add(voxel, other, out=voxel)
 
 def multiply(voxel, factor):
-    return np.multiply(voxel, factor, dtype=voxel.dtype)
+    return np.multiply(voxel, factor, out=voxel)
 
 def conv(voxel, kernel, border_mode, fill_value):
     if len(voxel.shape) == C.NUM_MULTI_CHANNEL_DIMENSIONS:
@@ -247,7 +247,7 @@ def contrast(voxel, contrast):
     """
     mean = np.mean(voxel)
 
-    voxel = np.subtract(voxel, mean)
+    np.subtract(voxel, mean, out=voxel)
     np.multiply(voxel, contrast, out=voxel)
 
     return np.add(voxel, mean, out=voxel)
@@ -258,31 +258,25 @@ def gamma(voxel, gamma):
             mathematical notation:
                 voxel = signs * voxel^gamma
     """
-    values = np.abs(voxel)
     signs = np.sign(voxel)
+    np.abs(voxel, out=voxel)
+    np.power(voxel, gamma, out=voxel)
 
-    voxel = np.power(values, gamma)
     return np.multiply(signs, voxel, out=voxel)
 
 def plane_dropout(voxel, indices, value, dim):
-    voxel = np.copy(voxel)
-
     selector = [ slice(0, None) for _ in range(dim) ]
     voxel[(*selector, indices)] = value
 
     return voxel
 
 def patch_dropout(voxel, patches, value):
-    voxel = np.copy(voxel)
-
     for patch in patches:
         voxel[patch] = value
 
     return voxel
 
 def patch_shuffle(voxel, patches):
-    voxel = np.copy(voxel)
-
     for patch in patches:
         pixels = voxel[patch]
 

@@ -171,3 +171,27 @@ def test_OneOf_CASE_call_AND_check_application():
     output = transformation(voxel=input)['voxel']
 
     assert np.allclose(output, input)
+
+@pytest.mark.core
+def test_Sequential_CASE_call_AND_input_not_mutated():
+    voxel = np.ones((4, 4, 4, 1), dtype=np.float32)
+    expected = np.copy(voxel)
+
+    transformation = V.Sequential([
+        V.PatchDropout(
+            npatches=1,
+            height_range=(1, 1),
+            width_range=(1, 1),
+            depth_range=(1, 1),
+            fill_value=0.,
+            always_apply=True,
+        ),
+        V.IntensityShift(
+            shift_limit=1.,
+            always_apply=True,
+        ),
+    ], always_apply=True)
+
+    transformed = transformation(voxel=voxel)
+
+    assert np.allclose(voxel, expected)

@@ -41,7 +41,7 @@ class Augmentation(Transformation):
 
         return state
 
-    def __call__(self, *args, force_apply=False, **data):
+    def __call__(self, *args, force_apply=False, copy_on_entry=True, **data):
         """
             :args:
                 force_apply: bool
@@ -56,6 +56,8 @@ class Augmentation(Transformation):
             raise KeyError('You have to pass data to augmentation as named arguments, for example: aug(voxel=voxel)')
 
         if self.whether_apply(force_apply):
+            if copy_on_entry:
+                data = self._copy_targets(data, self.keys())
             params = self.get_params()
 
             if self.targets_as_params:
@@ -68,7 +70,7 @@ class Augmentation(Transformation):
                 params_dependent_on_targets = self.get_params_dependent_on_targets(targets_as_params)
                 params.update(params_dependent_on_targets)
 
-            return self.apply_with_params(params, **data)
+            data = self.apply_with_params(params, **data)
 
         return data
 

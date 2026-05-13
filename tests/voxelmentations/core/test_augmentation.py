@@ -118,3 +118,20 @@ def test_Composition_CASE_additional_keys_AND_chain_call():
 
     assert not transformation.keys()
     assert np.allclose(output, expected)
+
+@pytest.mark.core
+def test_Augmentation_CASE_call_AND_input_not_mutated():
+    voxel = np.ones((4, 4, 4, 1), dtype=np.float32)
+    expected = np.copy(voxel)
+
+    transformation = V.PatchDropout(
+        npatches=1,
+        height_range=(1, 1),
+        width_range=(1, 1),
+        depth_range=(1, 1),
+        fill_value=0.,
+        always_apply=True,
+    )
+    transformed = transformation(voxel=voxel)
+
+    assert np.allclose(voxel, expected)

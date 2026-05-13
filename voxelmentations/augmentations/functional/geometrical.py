@@ -10,8 +10,6 @@ def pad(points, pads):
     return points
 
 def affine(points, scale, angles, shift, shape):
-    points = np.copy(points)
-
     shape = np.array(shape)
 
     shift = shift * shape
@@ -27,8 +25,6 @@ def affine(points, scale, angles, shift, shape):
     return points
 
 def plane_affine(points, scale, angle, shear, shift, dim, shape):
-    points = np.copy(points)
-
     shape = [*shape[:dim], *shape[dim+1:C.NUM_SPATIAL_DIMENSIONS]]
     shape = np.array(shape)
 

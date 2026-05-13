@@ -47,6 +47,15 @@ class Transformation(Serializable):
     def __call__(self, *args, force_apply=False, **data):
         raise NotImplementedError
 
+    def _copy_targets(self, data, keys):
+        data = dict(data)
+
+        for key in keys:
+            if key in data:
+                data[key] = np.copy(data[key])
+
+        return data
+
     def get_class_name(self):
         """
             :return:

@@ -651,12 +651,12 @@ def test_contrast_CASE_contrast():
     contrast = 2
 
     input = np.expand_dims(
-        np.array([0, -1, 1]),
+        np.array([0., -1., 1.]),
         axis=(1, 2, 3),
     )
 
     expected = np.expand_dims(
-        np.array([0, -2, 2]),
+        np.array([0., -2., 2.]),
         axis=(1, 2, 3),
     )
 

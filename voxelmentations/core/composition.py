@@ -102,10 +102,13 @@ class Sequential(Composition):
         """
         super(Sequential, self).__init__(transformations, always_apply, p)
 
-    def __call__(self, *args, force_apply=False, **data):
+    def __call__(self, *args, force_apply=False, copy_on_entry=True, **data):
         if self.whether_apply(force_apply):
+            if copy_on_entry:
+                data = self._copy_targets(data, self.keys())
+
             for transform in self.transformations:
-                data = transform(**data)
+                data = transform(copy_on_entry=False, **data)
 
         return data
 
@@ -113,10 +116,13 @@ class Sequential(Composition):
 class NonSequential(Sequential):
     """Compose transformations to apply sequentially in random order.
     """
-    def __call__(self, *args, force_apply=False, **data):
+    def __call__(self, *args, force_apply=False, copy_on_entry=True, **data):
         if self.whether_apply(force_apply):
+            if copy_on_entry:
+                data = self._copy_targets(data, self.keys())
+
             for transform in np.random.permutation(self.transformations):
-                data = transform(**data)
+                data = transform(copy_on_entry=False, **data)
 
         return data
 
@@ -144,9 +150,11 @@ class OneOf(Composition):
 
         self.transformations_ps = [t / s for t in transformations_ps]
 
-    def __call__(self, *args, force_apply = False, **data):
+    def __call__(self, *args, force_apply = False, copy_on_entry=True, **data):
         if self.transformations_ps and self.whether_apply(force_apply):
+            if copy_on_entry:
+                data = self._copy_targets(data, self.keys())
             transform = np.random.choice(self.transformations, p=self.transformations_ps)
-            data = transform(force_apply=True, **data)
+            data = transform(force_apply=True, copy_on_entry=False, **data)
 
         return data
