@@ -10,14 +10,26 @@ import voxelmentations.augmentations.utils.geometrical as G
 def apply_along_dim(data, func, dim):
     """Apply the same transformation along the dim
     """
-    data = np.moveaxis(data, dim, 0)
+    def at(ndim, idx):
+        index = [slice(None)] * ndim
+        index[dim] = idx
+        return tuple(index)
 
-    data = np.stack([*map(
-        func,
-        data,
-    )], axis=dim)
+    dim = dim % data.ndim
 
-    return data
+    first = func(data[at(data.ndim, 0)])
+
+    shape = (*first.shape[:dim], data.shape[dim], *first.shape[dim:])
+    out = np.empty(shape, dtype=first.dtype)
+
+    out[at(out.ndim, 0)] = first
+
+    for idx in range(1, data.shape[dim]):
+        out[at(out.ndim, idx)] = func(
+            data[at(data.ndim, idx)]
+        )
+
+    return out
 
 def pad(voxel, pads, border_mode, fill_value):
     """Pad voxel
