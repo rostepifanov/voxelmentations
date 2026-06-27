@@ -291,7 +291,6 @@ def patch_dropout(voxel, patches, value):
 def patch_shuffle(voxel, patches):
     for patch in patches:
         pixels = voxel[patch]
-
         shape = pixels.shape
 
         if pixels.ndim == C.NUM_MULTI_CHANNEL_DIMENSIONS:
@@ -300,6 +299,9 @@ def patch_shuffle(voxel, patches):
             flat = pixels.reshape(-1)
 
         np.random.shuffle(flat)
+
+        if not np.shares_memory(flat, pixels):
+            voxel[patch] = flat.reshape(shape)
 
     return voxel
 
