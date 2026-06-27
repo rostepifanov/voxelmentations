@@ -300,7 +300,6 @@ def patch_shuffle(voxel, patches):
             flat = pixels.reshape(-1)
 
         np.random.shuffle(flat)
-        voxel[patch] = flat.reshape(shape)
 
     return voxel
 
