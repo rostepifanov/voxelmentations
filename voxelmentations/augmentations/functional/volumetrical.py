@@ -171,9 +171,11 @@ def plane_affine(voxel, scale, angle, shear, shift, interpolation, border_mode, 
     point = (shape - 1) / 2
 
     K = G.get_planar_translation_matrix(point)
+    invK = G.get_planar_translation_matrix(-point)
+
     T = G.get_planar_affine_matrix(scale, -angle, shear, shift)
 
-    M = K @ T @ np.linalg.inv(K)
+    M = K @ T @ invK
     M = M[:2]
 
     func = lambda arr: cv2.warpAffine(

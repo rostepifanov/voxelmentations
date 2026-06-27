@@ -16,9 +16,11 @@ def affine(points, scale, angles, shift, shape):
     point = 0.5 * shape
 
     K = G.get_volumetric_translation_matrix(point)
+    invK = G.get_volumetric_translation_matrix(-point)
+
     T = G.get_volumetric_affine_matrix(scale, angles, (0, 0, 0), shift)
 
-    M = K @ T @ np.linalg.inv(K)
+    M = K @ T @ invK
 
     np.matmul(points, M.T, out=points)
 
@@ -32,9 +34,11 @@ def plane_affine(points, scale, angle, shear, shift, dim, shape):
     point = 0.5 * shape
 
     K = G.get_planar_translation_matrix(point)
+    invK = G.get_planar_translation_matrix(-point)
+
     T = G.get_planar_affine_matrix(scale, angle, shear, shift)
 
-    M = K @ T @ np.linalg.inv(K)
+    M = K @ T @ invK
 
     dims = np.concatenate([
         np.arange(dim),
