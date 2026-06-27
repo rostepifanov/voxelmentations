@@ -9,8 +9,6 @@ def flip(points, dims, shape):
             shape: tuple of float
                 voxel shape where the point is located
     """
-    points = np.copy(points)
-
     shape = np.array(shape)
     points[:, dims] = np.subtract(shape[dims], points[:, dims])
 
@@ -27,8 +25,6 @@ def rot90(points, dims, times, shape):
             shape: tuple of float
                 voxel shape where the point is located
     """
-    points = np.copy(points)
-
     shape = np.array(shape)
 
     if times % 4 == 0:
@@ -51,8 +47,6 @@ def transpose(points, dims):
             dims: (int, int)
                 the value of dims to permute
     """
-    points = np.copy(points)
-
     points[:, dims] = points[:, dims[::-1]]
 
     return points
