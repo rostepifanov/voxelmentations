@@ -111,16 +111,13 @@ def affine(voxel, scale, angles, shift, interpolation, border_mode, fill_value):
         S = S[:C.NUM_SPATIAL_DIMENSIONS, :C.NUM_SPATIAL_DIMENSIONS]
         R = R[:C.NUM_SPATIAL_DIMENSIONS, :C.NUM_SPATIAL_DIMENSIONS]
 
-    dS = S.diagonal()
-    invS = np.diag(1 / dS)
+    invRinvS = R.T / S.diagonal()
 
-    invR = R.T
-
-    offset = point - invR @ (point + shift) / dS
+    offset = point - invRinvS @ (point + shift)
 
     voxel = sc.ndimage.affine_transform(
         voxel,
-        invR @ invS,
+        invRinvS,
         offset=offset,
         order=C.MAP_INTER_TO_SC[interpolation],
         mode=C.MAP_BORDER_TYPE_TO_SC[border_mode],
